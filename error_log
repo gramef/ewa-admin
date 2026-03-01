@@ -1,0 +1,2 @@
+[24-Oct-2024 09:48:13 America/Boise] PHP Fatal error:  Out of memory (allocated 220778496 bytes) (tried to allocate 2621440 bytes) in /home2/rqkxbfmy/public_html/vendor/composer/autoload_classmap.php on line 8278
+[24-Oct-2024 09:52:42 America/Boise] PHP Fatal error:  Out of memory (allocated 241991680 bytes) (tried to allocate 2101248 bytes) in phar:///opt/cpanel/composer/bin/composer/src/Composer/Autoload/AutoloadGenerator.php on line 1170

@@ -1,0 +1,1153 @@
+/* ============================================
+   EWA Admin Panel — Premium Dark Theme Overlay
+   Designed to layer on top of AdminLTE v3
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+/* ── CSS Custom Properties ─────────────────── */
+:root {
+    --ewa-bg-primary: #0a0a0f;
+    --ewa-bg-secondary: #111118;
+    --ewa-bg-card: #16161f;
+    --ewa-bg-card-hover: #1c1c28;
+    --ewa-bg-sidebar: #0d0d14;
+    --ewa-bg-input: #1a1a25;
+    --ewa-border: rgba(255, 255, 255, 0.06);
+    --ewa-border-active: rgba(200, 149, 108, 0.3);
+    --ewa-text-primary: #f0ece4;
+    --ewa-text-secondary: rgba(240, 236, 228, 0.6);
+    --ewa-text-muted: rgba(240, 236, 228, 0.35);
+    --ewa-accent: #c8956c;
+    --ewa-accent-light: #d4a57c;
+    --ewa-accent-glow: rgba(200, 149, 108, 0.15);
+    --ewa-success: #4ade80;
+    --ewa-warning: #fbbf24;
+    --ewa-danger: #f87171;
+    --ewa-info: #60a5fa;
+    --ewa-radius: 12px;
+    --ewa-radius-sm: 8px;
+    --ewa-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    --ewa-glass: rgba(22, 22, 31, 0.7);
+    --ewa-glass-border: rgba(255, 255, 255, 0.05);
+    --ewa-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Global Reset ──────────────────────────── */
+body {
+    background: var(--ewa-bg-primary) !important;
+    color: var(--ewa-text-primary) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Top Navbar ────────────────────────────── */
+.main-header.navbar {
+    background: var(--ewa-bg-secondary) !important;
+    border-bottom: 1px solid var(--ewa-border) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.main-header .navbar-nav .nav-link {
+    color: var(--ewa-text-secondary) !important;
+    transition: var(--ewa-transition);
+}
+
+.main-header .navbar-nav .nav-link:hover,
+.main-header .navbar-nav .nav-link.active {
+    color: var(--ewa-accent) !important;
+}
+
+.main-header .navbar-nav .nav-link .brand-image {
+    border: 2px solid var(--ewa-accent) !important;
+}
+
+.main-header .dropdown-menu {
+    background: var(--ewa-bg-card) !important;
+    border: 1px solid var(--ewa-border) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+    box-shadow: var(--ewa-shadow) !important;
+}
+
+.main-header .dropdown-menu .dropdown-item {
+    color: var(--ewa-text-secondary) !important;
+    transition: var(--ewa-transition);
+}
+
+.main-header .dropdown-menu .dropdown-item:hover,
+.main-header .dropdown-menu .dropdown-item.active {
+    background: var(--ewa-accent-glow) !important;
+    color: var(--ewa-accent) !important;
+}
+
+.main-header .dropdown-menu .dropdown-divider {
+    border-color: var(--ewa-border) !important;
+}
+
+/* ── Sidebar ───────────────────────────────── */
+.main-sidebar {
+    background: var(--ewa-bg-sidebar) !important;
+    border-right: 1px solid var(--ewa-border) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Override all sidebar color schemes */
+[class*="sidebar-dark-"],
+[class*="sidebar-light-"] {
+    background: var(--ewa-bg-sidebar) !important;
+}
+
+.brand-link {
+    background: transparent !important;
+    border-bottom: 1px solid var(--ewa-border) !important;
+    padding: 14px 16px !important;
+}
+
+.brand-link .brand-text {
+    color: var(--ewa-text-primary) !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+}
+
+.brand-link .brand-image {
+    border-radius: var(--ewa-radius-sm) !important;
+}
+
+.sidebar {
+    padding-top: 8px !important;
+}
+
+.nav-sidebar .nav-header {
+    color: var(--ewa-accent) !important;
+    text-transform: uppercase !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 1.2px !important;
+    padding: 20px 16px 8px !important;
+    opacity: 0.8;
+}
+
+.nav-sidebar .nav-item>.nav-link {
+    color: var(--ewa-text-secondary) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+    margin: 2px 8px !important;
+    padding: 10px 12px !important;
+    transition: var(--ewa-transition);
+    font-size: 0.875rem !important;
+}
+
+.nav-sidebar .nav-item>.nav-link:hover {
+    background: var(--ewa-accent-glow) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+.nav-sidebar .nav-item>.nav-link.active {
+    background: linear-gradient(135deg, var(--ewa-accent), #a07050) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 16px rgba(200, 149, 108, 0.25) !important;
+    font-weight: 500 !important;
+}
+
+.nav-sidebar .nav-item>.nav-link.active .nav-icon {
+    color: #fff !important;
+}
+
+.nav-sidebar .nav-icon {
+    color: var(--ewa-text-muted) !important;
+    transition: var(--ewa-transition);
+    font-size: 0.9rem !important;
+    width: 24px !important;
+    text-align: center !important;
+}
+
+.nav-sidebar .nav-item>.nav-link:hover .nav-icon {
+    color: var(--ewa-accent) !important;
+}
+
+/* Treeview sub-menu */
+.nav-treeview {
+    background: rgba(0, 0, 0, 0.15) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+    margin: 0 8px 4px !important;
+    padding: 4px 0 !important;
+}
+
+.nav-treeview>.nav-item>.nav-link {
+    font-size: 0.82rem !important;
+    padding: 8px 12px 8px 42px !important;
+}
+
+.nav-treeview>.nav-item>.nav-link.active {
+    background: var(--ewa-accent-glow) !important;
+    color: var(--ewa-accent) !important;
+    box-shadow: none !important;
+    font-weight: 500 !important;
+}
+
+/* Sidebar badge */
+.nav-sidebar .badge {
+    background: var(--ewa-accent) !important;
+    color: #fff !important;
+    border-radius: 20px !important;
+    font-size: 0.65rem !important;
+    padding: 3px 8px !important;
+}
+
+/* ── Content Area ──────────────────────────── */
+.content-wrapper {
+    background: var(--ewa-bg-primary) !important;
+}
+
+.content-header {
+    background: transparent !important;
+}
+
+.content-header h1 {
+    color: var(--ewa-text-primary) !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1.5rem !important;
+}
+
+.content-header h1 small {
+    color: var(--ewa-text-secondary) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 400 !important;
+}
+
+.breadcrumb {
+    background: var(--ewa-bg-card) !important;
+    border: 1px solid var(--ewa-border) !important;
+    border-radius: 24px !important;
+}
+
+.breadcrumb-item a {
+    color: var(--ewa-text-secondary) !important;
+}
+
+.breadcrumb-item.active {
+    color: var(--ewa-accent) !important;
+}
+
+/* ── Cards / Boxes ─────────────────────────── */
+.card,
+.small-box {
+    background: var(--ewa-bg-card) !important;
+    border: 1px solid var(--ewa-border) !important;
+    border-radius: var(--ewa-radius) !important;
+    box-shadow: var(--ewa-shadow) !important;
+    transition: var(--ewa-transition);
+    overflow: hidden;
+}
+
+.card:hover,
+.small-box:hover {
+    border-color: var(--ewa-border-active) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+.card-header {
+    background: transparent !important;
+    border-bottom: 1px solid var(--ewa-border) !important;
+    padding: 16px 20px !important;
+}
+
+.card-header .card-title {
+    color: var(--ewa-text-primary) !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+}
+
+.card-header .card-tools .btn-tool {
+    color: var(--ewa-text-secondary) !important;
+}
+
+.card-body {
+    background: transparent !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+.card-footer {
+    background: rgba(0, 0, 0, 0.1) !important;
+    border-top: 1px solid var(--ewa-border) !important;
+}
+
+/* Small stat boxes */
+.small-box .inner h3 {
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 1.8rem !important;
+}
+
+.small-box .inner p {
+    color: var(--ewa-text-secondary) !important;
+    font-size: 0.85rem !important;
+}
+
+.small-box .icon {
+    color: var(--ewa-accent) !important;
+    opacity: 0.15;
+    font-size: 4rem !important;
+}
+
+.small-box .small-box-footer {
+    background: rgba(200, 149, 108, 0.1) !important;
+    color: var(--ewa-accent) !important;
+    border-top: 1px solid var(--ewa-border) !important;
+    font-size: 0.8rem !important;
+    padding: 8px 16px !important;
+    transition: var(--ewa-transition);
+}
+
+.small-box .small-box-footer:hover {
+    background: rgba(200, 149, 108, 0.2) !important;
+    text-decoration: none;
+}
+
+/* Override bg-white on stat boxes */
+.small-box.bg-white,
+.card.bg-white {
+    background: var(--ewa-bg-card) !important;
+}
+
+/* Theme color text → gold accent */
+[class*="text-primary"],
+[class*="text-info"] {
+    color: var(--ewa-accent) !important;
+}
+
+.text-success {
+    color: var(--ewa-success) !important;
+}
+
+.text-warning {
+    color: var(--ewa-warning) !important;
+}
+
+.text-danger {
+    color: var(--ewa-danger) !important;
+}
+
+.text-muted {
+    color: var(--ewa-text-muted) !important;
+}
+
+/* ── Tables ────────────────────────────────── */
+.table {
+    color: var(--ewa-text-primary) !important;
+}
+
+.table thead th {
+    background: rgba(200, 149, 108, 0.08) !important;
+    color: var(--ewa-text-secondary) !important;
+    border-bottom: 1px solid var(--ewa-border) !important;
+    font-size: 0.78rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    font-weight: 600 !important;
+    padding: 12px 16px !important;
+}
+
+.table td {
+    border-top: 1px solid var(--ewa-border) !important;
+    padding: 12px 16px !important;
+    vertical-align: middle !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.table-striped tbody tr:nth-of-type(even) {
+    background: transparent !important;
+}
+
+.table tbody tr:hover {
+    background: var(--ewa-accent-glow) !important;
+}
+
+.table-hover tbody tr:hover {
+    background: var(--ewa-accent-glow) !important;
+}
+
+/* DataTables */
+.dataTables_wrapper {
+    color: var(--ewa-text-secondary) !important;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+    color: var(--ewa-text-secondary) !important;
+    padding: 12px 0 !important;
+}
+
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+    background: var(--ewa-bg-input) !important;
+    border: 1px solid var(--ewa-border) !important;
+    color: var(--ewa-text-primary) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+    padding: 6px 12px !important;
+}
+
+.page-item .page-link {
+    background: var(--ewa-bg-card) !important;
+    border-color: var(--ewa-border) !important;
+    color: var(--ewa-text-secondary) !important;
+    transition: var(--ewa-transition);
+}
+
+.page-item.active .page-link {
+    background: var(--ewa-accent) !important;
+    border-color: var(--ewa-accent) !important;
+    color: #fff !important;
+}
+
+.page-item .page-link:hover {
+    background: var(--ewa-accent-glow) !important;
+    color: var(--ewa-accent) !important;
+}
+
+/* ── Forms ─────────────────────────────────── */
+.form-control {
+    background: var(--ewa-bg-input) !important;
+    border: 1px solid var(--ewa-border) !important;
+    color: var(--ewa-text-primary) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+    transition: var(--ewa-transition);
+    padding: 10px 14px !important;
+}
+
+.form-control:focus {
+    border-color: var(--ewa-accent) !important;
+    box-shadow: 0 0 0 3px var(--ewa-accent-glow) !important;
+    background: var(--ewa-bg-input) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+.form-control::placeholder {
+    color: var(--ewa-text-muted) !important;
+}
+
+.form-group label,
+label {
+    color: var(--ewa-text-secondary) !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    margin-bottom: 6px !important;
+}
+
+.custom-select {
+    background-color: var(--ewa-bg-input) !important;
+    border: 1px solid var(--ewa-border) !important;
+    color: var(--ewa-text-primary) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+}
+
+.custom-file-label {
+    background: var(--ewa-bg-input) !important;
+    border: 1px solid var(--ewa-border) !important;
+    color: var(--ewa-text-secondary) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+}
+
+.input-group-text {
+    background: var(--ewa-bg-card) !important;
+    border: 1px solid var(--ewa-border) !important;
+    color: var(--ewa-text-secondary) !important;
+}
+
+/* Select2 */
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+    background: var(--ewa-bg-input) !important;
+    border: 1px solid var(--ewa-border) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+    min-height: 40px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--ewa-text-primary) !important;
+}
+
+.select2-dropdown {
+    background: var(--ewa-bg-card) !important;
+    border: 1px solid var(--ewa-border) !important;
+}
+
+.select2-results__option {
+    color: var(--ewa-text-primary) !important;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: var(--ewa-accent) !important;
+    color: #fff !important;
+}
+
+/* ── Buttons ───────────────────────────────── */
+.btn-primary {
+    background: linear-gradient(135deg, var(--ewa-accent), #a07050) !important;
+    border: none !important;
+    color: #fff !important;
+    border-radius: var(--ewa-radius-sm) !important;
+    font-weight: 500 !important;
+    transition: var(--ewa-transition);
+    box-shadow: 0 4px 12px rgba(200, 149, 108, 0.25) !important;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--ewa-accent-light), var(--ewa-accent)) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(200, 149, 108, 0.35) !important;
+}
+
+.btn-default,
+.btn-secondary {
+    background: var(--ewa-bg-card) !important;
+    border: 1px solid var(--ewa-border) !important;
+    color: var(--ewa-text-secondary) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+}
+
+.btn-default:hover,
+.btn-secondary:hover {
+    background: var(--ewa-bg-card-hover) !important;
+    color: var(--ewa-text-primary) !important;
+    border-color: var(--ewa-border-active) !important;
+}
+
+.btn-success {
+    background: var(--ewa-success) !important;
+    border: none !important;
+    color: #0a0a0f !important;
+    border-radius: var(--ewa-radius-sm) !important;
+}
+
+.btn-warning {
+    background: var(--ewa-warning) !important;
+    border: none !important;
+    color: #0a0a0f !important;
+    border-radius: var(--ewa-radius-sm) !important;
+}
+
+.btn-danger {
+    background: var(--ewa-danger) !important;
+    border: none !important;
+    color: #fff !important;
+    border-radius: var(--ewa-radius-sm) !important;
+}
+
+.btn-info {
+    background: var(--ewa-info) !important;
+    border: none !important;
+    color: #0a0a0f !important;
+    border-radius: var(--ewa-radius-sm) !important;
+}
+
+.btn-outline-primary {
+    border-color: var(--ewa-accent) !important;
+    color: var(--ewa-accent) !important;
+}
+
+.btn-outline-primary:hover {
+    background: var(--ewa-accent) !important;
+    color: #fff !important;
+}
+
+/* ── Modals ────────────────────────────────── */
+.modal-content {
+    background: var(--ewa-bg-card) !important;
+    border: 1px solid var(--ewa-border) !important;
+    border-radius: var(--ewa-radius) !important;
+    box-shadow: var(--ewa-shadow) !important;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--ewa-border) !important;
+}
+
+.modal-header .modal-title {
+    color: var(--ewa-text-primary) !important;
+    font-family: 'Outfit', sans-serif !important;
+}
+
+.modal-header .close {
+    color: var(--ewa-text-secondary) !important;
+    text-shadow: none !important;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--ewa-border) !important;
+}
+
+.modal-backdrop.show {
+    opacity: 0.7 !important;
+}
+
+/* ── Alerts / Callouts ─────────────────────── */
+.alert {
+    border-radius: var(--ewa-radius-sm) !important;
+    border: none !important;
+}
+
+.callout {
+    border-radius: var(--ewa-radius-sm) !important;
+    background: var(--ewa-bg-card) !important;
+}
+
+/* ── Footer ────────────────────────────────── */
+.main-footer {
+    background: var(--ewa-bg-secondary) !important;
+    color: var(--ewa-text-muted) !important;
+    border-top: 1px solid var(--ewa-border) !important;
+}
+
+.main-footer a {
+    color: var(--ewa-accent) !important;
+}
+
+/* ── Flash Messages ────────────────────────── */
+.alert-success {
+    background: rgba(74, 222, 128, 0.1) !important;
+    border-left: 4px solid var(--ewa-success) !important;
+    color: var(--ewa-success) !important;
+}
+
+.alert-danger {
+    background: rgba(248, 113, 113, 0.1) !important;
+    border-left: 4px solid var(--ewa-danger) !important;
+    color: var(--ewa-danger) !important;
+}
+
+.alert-warning {
+    background: rgba(251, 191, 36, 0.1) !important;
+    border-left: 4px solid var(--ewa-warning) !important;
+    color: var(--ewa-warning) !important;
+}
+
+.alert-info {
+    background: rgba(96, 165, 250, 0.1) !important;
+    border-left: 4px solid var(--ewa-info) !important;
+    color: var(--ewa-info) !important;
+}
+
+/* ── Scrollbar ─────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--ewa-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(200, 149, 108, 0.3);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--ewa-accent);
+}
+
+/* ── Miscellaneous Overrides ───────────────── */
+.elevation-2 {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.shadow-sm {
+    box-shadow: var(--ewa-shadow) !important;
+}
+
+hr {
+    border-color: var(--ewa-border) !important;
+}
+
+a {
+    color: var(--ewa-accent);
+}
+
+a:hover {
+    color: var(--ewa-accent-light);
+}
+
+/* Progress bars */
+.progress {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, var(--ewa-accent), #d4a57c) !important;
+}
+
+/* Badges */
+.badge-primary {
+    background: var(--ewa-accent) !important;
+    color: #fff !important;
+}
+
+.badge-success {
+    background: var(--ewa-success) !important;
+}
+
+.badge-warning {
+    background: var(--ewa-warning) !important;
+    color: #0a0a0f !important;
+}
+
+.badge-danger {
+    background: var(--ewa-danger) !important;
+}
+
+.badge-info {
+    background: var(--ewa-info) !important;
+    color: #0a0a0f !important;
+}
+
+/* Tabs */
+.nav-tabs {
+    border-bottom: 1px solid var(--ewa-border) !important;
+}
+
+.nav-tabs .nav-link {
+    color: var(--ewa-text-secondary) !important;
+    border: none !important;
+    transition: var(--ewa-transition);
+}
+
+.nav-tabs .nav-link.active {
+    background: transparent !important;
+    color: var(--ewa-accent) !important;
+    border-bottom: 2px solid var(--ewa-accent) !important;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--ewa-accent) !important;
+    border: none !important;
+    border-bottom: 2px solid var(--ewa-accent-glow) !important;
+}
+
+/* iCheck / Custom Checkboxes */
+.custom-control-input:checked~.custom-control-label::before {
+    background-color: var(--ewa-accent) !important;
+    border-color: var(--ewa-accent) !important;
+}
+
+/* Toasts */
+.toast {
+    background: var(--ewa-bg-card) !important;
+    border: 1px solid var(--ewa-border) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+/* Media library */
+.dropzone {
+    background: var(--ewa-bg-input) !important;
+    border: 2px dashed var(--ewa-border) !important;
+    border-radius: var(--ewa-radius) !important;
+}
+
+.dropzone:hover {
+    border-color: var(--ewa-accent) !important;
+}
+
+/* ── Dashboard-Specific Enhancements ───────── */
+
+/* Gradient stat cards */
+.small-box.bg-white:nth-child(1) .inner h3,
+.col-lg-3:nth-child(1) .small-box .inner h3 {
+    background: linear-gradient(135deg, var(--ewa-accent), #e0b090);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.col-lg-3:nth-child(2) .small-box .inner h3 {
+    background: linear-gradient(135deg, var(--ewa-success), #86efac);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.col-lg-3:nth-child(3) .small-box .inner h3 {
+    background: linear-gradient(135deg, var(--ewa-info), #93c5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.col-lg-3:nth-child(4) .small-box .inner h3 {
+    background: linear-gradient(135deg, var(--ewa-warning), #fde68a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Override AdminLTE's auto background colors on .bg-* utility classes */
+.bg-white {
+    background: var(--ewa-bg-card) !important;
+}
+
+.bg-light {
+    background: var(--ewa-bg-secondary) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+/* Make sure image thumbnails look correct */
+.img-circle {
+    border: 2px solid var(--ewa-border) !important;
+}
+
+/* OverlayScrollbars */
+.os-theme-dark>.os-scrollbar>.os-scrollbar-track>.os-scrollbar-handle {
+    background: rgba(200, 149, 108, 0.3) !important;
+}
+
+/* Smooth page transitions */
+.content-wrapper,
+.main-sidebar,
+.main-header {
+    transition: var(--ewa-transition);
+}
+
+/* ── DataTables FixedColumns (white patch fix) ── */
+.DTFC_LeftWrapper,
+.DTFC_RightWrapper,
+.DTFC_LeftHeadWrapper,
+.DTFC_RightHeadWrapper,
+.DTFC_LeftBodyWrapper,
+.DTFC_RightBodyWrapper,
+.DTFC_LeftFootWrapper,
+.DTFC_RightFootWrapper,
+.DTFC_LeftBodyLiner,
+.DTFC_RightBodyLiner,
+.DTFC_Cloned,
+.DTFC_ScrollWrapper,
+.DTFC_Blocker,
+.DTFC_LeftHeadBlocker,
+.DTFC_RightHeadBlocker,
+.DTFC_LeftFootBlocker,
+.DTFC_RightFootBlocker {
+    background: var(--ewa-bg-card) !important;
+}
+
+.DTFC_Cloned thead th {
+    background: rgba(200, 149, 108, 0.08) !important;
+    color: var(--ewa-text-secondary) !important;
+    border-bottom: 1px solid var(--ewa-border) !important;
+}
+
+.DTFC_Cloned tbody td {
+    background: var(--ewa-bg-card) !important;
+    border-top: 1px solid var(--ewa-border) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+.DTFC_Cloned tbody tr:nth-of-type(odd) td {
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.DTFC_Cloned tbody tr:hover td {
+    background: var(--ewa-accent-glow) !important;
+}
+
+/* Override inline white bg on table rows in fixed columns */
+.DTFC_LeftWrapper tr,
+.DTFC_RightWrapper tr,
+.DTFC_Cloned tr,
+.DTFC_LeftWrapper tr.odd,
+.DTFC_LeftWrapper tr.even,
+.DTFC_RightWrapper tr.odd,
+.DTFC_RightWrapper tr.even,
+.DTFC_Cloned tr.odd,
+.DTFC_Cloned tr.even {
+    background: var(--ewa-bg-card) !important;
+}
+
+.DTFC_LeftWrapper tr.odd td,
+.DTFC_RightWrapper tr.odd td,
+.DTFC_Cloned tr.odd td {
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.DTFC_LeftWrapper tr:hover,
+.DTFC_RightWrapper tr:hover,
+.DTFC_Cloned tr:hover,
+.DTFC_LeftWrapper tr:hover td,
+.DTFC_RightWrapper tr:hover td {
+    background: var(--ewa-accent-glow) !important;
+}
+
+/* DataTables fixed-column right shadow fix */
+.DTFC_LeftWrapper {
+    border-right: 1px solid var(--ewa-border) !important;
+}
+
+.DTFC_RightWrapper {
+    border-left: 1px solid var(--ewa-border) !important;
+}
+
+/* DataTables FixedHeader */
+.dtfh-floatingparent {
+    background: var(--ewa-bg-card) !important;
+}
+
+/* DataTables Responsive */
+table.dataTable.dtr-inline.collapsed>tbody>tr>td.dtr-control::before {
+    background: var(--ewa-accent) !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* DataTables processing overlay */
+.dataTables_processing {
+    background: rgba(10, 10, 15, 0.85) !important;
+    color: var(--ewa-accent) !important;
+    border: 1px solid var(--ewa-border) !important;
+    border-radius: var(--ewa-radius-sm) !important;
+}
+
+/* ── text-dark override for dark theme ──────── */
+.text-dark {
+    color: var(--ewa-text-primary) !important;
+}
+
+/* ── Additional bg-* overrides ─────────────── */
+.bg-gray,
+.bg-gray-dark,
+.bg-secondary {
+    background: var(--ewa-bg-secondary) !important;
+}
+
+/* ── Table hover fix (stronger contrast) ───── */
+.table tbody tr:hover td,
+.table-hover tbody tr:hover td,
+.table-striped tbody tr:hover td {
+    background: rgba(200, 149, 108, 0.1) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+/* Table action buttons */
+.table .btn-link {
+    color: var(--ewa-text-secondary) !important;
+}
+
+.table .btn-link:hover {
+    color: var(--ewa-accent) !important;
+}
+
+/* Sidebar hover mismatch fix — ensure submenu hover works */
+.nav-sidebar>.nav-item>.nav-link:hover,
+.nav-treeview>.nav-item>.nav-link:hover {
+    background: var(--ewa-accent-glow) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+/* DataTables scrollable body background */
+.dataTables_scrollBody,
+.dataTables_scrollHead,
+.dataTables_scrollFoot {
+    background: var(--ewa-bg-card) !important;
+}
+
+/* Fix any remaining white bg on table wrappers */
+div.dataTables_wrapper div.dataTables_scrollBody>table>thead>tr>th,
+div.dataTables_wrapper div.dataTables_scrollBody>table>tbody>tr>td {
+    background: inherit !important;
+}
+
+/* ── Login Page Dark Theme ─────────────────── */
+.login-page,
+.register-page {
+    background: var(--ewa-bg-primary) !important;
+}
+
+.login-box .card,
+.register-box .card,
+.login-card-body,
+.register-card-body {
+    background: var(--ewa-bg-card) !important;
+    color: var(--ewa-text-primary) !important;
+    border: 1px solid var(--ewa-border) !important;
+    border-radius: var(--ewa-radius) !important;
+}
+
+.login-logo a,
+.register-logo a {
+    color: var(--ewa-text-primary) !important;
+}
+
+/* ── Booking Detail / List Group Dark Theme ── */
+.list-group-item {
+    background: var(--ewa-bg-card) !important;
+    border-color: var(--ewa-border) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+.list-group-item.active {
+    background: var(--ewa-accent) !important;
+    border-color: var(--ewa-accent) !important;
+    color: #fff !important;
+}
+
+/* Booking detail alternating rows — override white/light backgrounds */
+.list-group-item:nth-child(odd),
+.list-group-item:nth-child(even) {
+    background: var(--ewa-bg-card) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+.list-group-item:nth-child(even) {
+    background: var(--ewa-bg-secondary) !important;
+}
+
+/* Override bg-light / bg-white within list-group and booking detail */
+.list-group-item.bg-light,
+.list-group .bg-light,
+.tab-content .bg-light,
+.card-body .bg-light {
+    background: var(--ewa-bg-secondary) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+/* Booking status stepper / timeline */
+.bs-stepper,
+.bs-stepper .bs-stepper-header,
+.bs-stepper .bs-stepper-content,
+.bs-stepper .step .step-trigger {
+    background: var(--ewa-bg-card) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+.bs-stepper .step-trigger .bs-stepper-label {
+    color: var(--ewa-text-secondary) !important;
+}
+
+.bs-stepper .step.active .bs-stepper-label {
+    color: var(--ewa-accent) !important;
+}
+
+/* Generic stepper (used in booking status display) */
+.stepper,
+.stepper .step,
+.stepper .step a {
+    color: var(--ewa-text-secondary) !important;
+}
+
+/* Booking status strip — fix white bg on status progress bar */
+[class*="booking-status"],
+.booking-status-bar,
+.status-steps {
+    background: var(--ewa-bg-card) !important;
+}
+
+/* Fix the booking detail table — override inline bg-light on rows */
+.tab-content {
+    color: var(--ewa-text-primary) !important;
+}
+
+.tab-pane {
+    background: var(--ewa-bg-card) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+/* Info box (sidebar panels in booking detail) */
+.info-box {
+    background: var(--ewa-bg-card) !important;
+    border: 1px solid var(--ewa-border) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+.info-box .info-box-text {
+    color: var(--ewa-text-secondary) !important;
+}
+
+.info-box .info-box-number {
+    color: var(--ewa-text-primary) !important;
+}
+
+/* User card (customer sidebar in booking detail) */
+.card-widget,
+.widget-user .widget-user-header,
+.widget-user .widget-user-username,
+.widget-user .widget-user-desc {
+    background: var(--ewa-bg-card) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+/* Direct chat (if used in booking communication) */
+.direct-chat-msg,
+.direct-chat-text {
+    background: var(--ewa-bg-secondary) !important;
+    border: 1px solid var(--ewa-border) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+/* Fix for description-list style detail rows */
+dl,
+dt,
+dd {
+    color: var(--ewa-text-primary) !important;
+}
+
+dt {
+    color: var(--ewa-text-secondary) !important;
+}
+
+/* Override bg-white and bg-light used in booking detail sections */
+.card-body .row>div[class*="col"] .bg-light,
+.card-body .row>div[class*="col"] .bg-white {
+    background: var(--ewa-bg-secondary) !important;
+    color: var(--ewa-text-primary) !important;
+}
+
+/* Ensure all text within booking detail is readable */
+.card-body h1,
+.card-body h2,
+.card-body h3,
+.card-body h4,
+.card-body h5,
+.card-body h6 {
+    color: var(--ewa-text-primary) !important;
+}
+
+.card-body p,
+.card-body span,
+.card-body div {
+    color: inherit;
+}
+
+/* Tab-content force dark backgrounds */
+.tab-content>.tab-pane {
+    background: transparent !important;
+}
+
+.tab-content .card-body {
+    background: var(--ewa-bg-card) !important;
+}
+
+/* Print styles: revert to light */
+@media print {
+
+    body,
+    .content-wrapper,
+    .main-sidebar,
+    .main-header {
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .list-group-item {
+        background: #fff !important;
+        color: #000 !important;
+        border-color: #dee2e6 !important;
+    }
+}

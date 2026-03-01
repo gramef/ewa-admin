@@ -1,0 +1,60 @@
+[01-Jul-2024 16:57:56 America/Montserrat] PHP Fatal error:  Declaration of App\DataTables\EarningDataTable::filename() must be compatible with Yajra\DataTables\Services\DataTable::filename(): string in /home2/rqkxbfmy/public_html/app/DataTables/EarningDataTable.php on line 176
+[01-Aug-2024 13:33:57 Europe/London] PHP Fatal error:  Trait "App\Http\Controllers\Stripe\Stripe" not found in /home2/rqkxbfmy/public_html/app/Http/Controllers/StripeController.php on line 17
+[01-Aug-2024 13:36:11 Europe/London] Stripe Notice: Undefined property of Stripe\StripeObject instance: use_stripe_sdk
+[01-Aug-2024 14:18:45 Europe/London] Stripe Notice: Undefined property of Stripe\StripeObject instance: return_url
+[24-Oct-2024 09:50:26 America/Boise] PHP Warning:  require(/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php): Failed to open stream: No such file or directory in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:50:26 America/Boise] PHP Fatal error:  Uncaught Error: Failed opening required '/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php(45): {closure}('25072dd6e247008...', '/home2/rqkxbfmy...')
+#1 /home2/rqkxbfmy/public_html/vendor/autoload.php(25): ComposerAutoloaderInit7f1e4fa91f3f7d994b6df545dbee2d66::getLoader()
+#2 /home2/rqkxbfmy/public_html/public/index.php(24): require('/home2/rqkxbfmy...')
+#3 {main}
+  thrown in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:50:28 America/Boise] PHP Warning:  require(/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php): Failed to open stream: No such file or directory in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:50:28 America/Boise] PHP Fatal error:  Uncaught Error: Failed opening required '/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php(45): {closure}('25072dd6e247008...', '/home2/rqkxbfmy...')
+#1 /home2/rqkxbfmy/public_html/vendor/autoload.php(25): ComposerAutoloaderInit7f1e4fa91f3f7d994b6df545dbee2d66::getLoader()
+#2 /home2/rqkxbfmy/public_html/public/index.php(24): require('/home2/rqkxbfmy...')
+#3 {main}
+  thrown in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:50:29 America/Boise] PHP Warning:  require(/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php): Failed to open stream: No such file or directory in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:50:29 America/Boise] PHP Fatal error:  Uncaught Error: Failed opening required '/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php(45): {closure}('25072dd6e247008...', '/home2/rqkxbfmy...')
+#1 /home2/rqkxbfmy/public_html/vendor/autoload.php(25): ComposerAutoloaderInit7f1e4fa91f3f7d994b6df545dbee2d66::getLoader()
+#2 /home2/rqkxbfmy/public_html/public/index.php(24): require('/home2/rqkxbfmy...')
+#3 {main}
+  thrown in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:50:31 America/Boise] PHP Warning:  require(/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php): Failed to open stream: No such file or directory in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:50:31 America/Boise] PHP Fatal error:  Uncaught Error: Failed opening required '/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php(45): {closure}('25072dd6e247008...', '/home2/rqkxbfmy...')
+#1 /home2/rqkxbfmy/public_html/vendor/autoload.php(25): ComposerAutoloaderInit7f1e4fa91f3f7d994b6df545dbee2d66::getLoader()
+#2 /home2/rqkxbfmy/public_html/public/index.php(24): require('/home2/rqkxbfmy...')
+#3 {main}
+  thrown in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:51:44 America/Boise] PHP Warning:  require(/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php): Failed to open stream: No such file or directory in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:51:44 America/Boise] PHP Fatal error:  Uncaught Error: Failed opening required '/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php(45): {closure}('25072dd6e247008...', '/home2/rqkxbfmy...')
+#1 /home2/rqkxbfmy/public_html/vendor/autoload.php(25): ComposerAutoloaderInit7f1e4fa91f3f7d994b6df545dbee2d66::getLoader()
+#2 /home2/rqkxbfmy/public_html/public/index.php(24): require('/home2/rqkxbfmy...')
+#3 {main}
+  thrown in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:51:46 America/Boise] PHP Warning:  require(/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php): Failed to open stream: No such file or directory in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:51:46 America/Boise] PHP Fatal error:  Uncaught Error: Failed opening required '/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php(45): {closure}('25072dd6e247008...', '/home2/rqkxbfmy...')
+#1 /home2/rqkxbfmy/public_html/vendor/autoload.php(25): ComposerAutoloaderInit7f1e4fa91f3f7d994b6df545dbee2d66::getLoader()
+#2 /home2/rqkxbfmy/public_html/public/index.php(24): require('/home2/rqkxbfmy...')
+#3 {main}
+  thrown in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:51:47 America/Boise] PHP Warning:  require(/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php): Failed to open stream: No such file or directory in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
+[24-Oct-2024 09:51:47 America/Boise] PHP Fatal error:  Uncaught Error: Failed opening required '/home2/rqkxbfmy/public_html/vendor/composer/../symfony/polyfill-php72/bootstrap.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php(45): {closure}('25072dd6e247008...', '/home2/rqkxbfmy...')
+#1 /home2/rqkxbfmy/public_html/vendor/autoload.php(25): ComposerAutoloaderInit7f1e4fa91f3f7d994b6df545dbee2d66::getLoader()
+#2 /home2/rqkxbfmy/public_html/public/index.php(24): require('/home2/rqkxbfmy...')
+#3 {main}
+  thrown in /home2/rqkxbfmy/public_html/vendor/composer/autoload_real.php on line 41
