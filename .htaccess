@@ -1,13 +1,15 @@
 RewriteEngine On
 RewriteBase /
-RewriteRule ^(storage)($|/) - [L]
+RewriteCond %{REQUEST_URI} !^/storage/app/public/
+RewriteRule ^storage/(.*)$ storage/app/public/$1 [L]
 RewriteCond %{THE_REQUEST} /public/([^\s?]*) [NC]
 RewriteRule ^ %1 [L,NE,R=302]
+RewriteCond %{REQUEST_URI} !^/storage/app/public/
 RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
 
 # php -- BEGIN cPanel-generated handler, do not edit
-# Set the “ea-php82” package as the default “PHP” programming language.
+# Set the "ea-php82" package as the default "PHP" programming language.
 <IfModule mime_module>
-  AddHandler application/x-httpd-ea-php82___lsphp .php .php8 .phtml
+    AddHandler application/x-httpd-ea-php82___lsphp .php .php8 .phtml
 </IfModule>
 # php -- END cPanel-generated handler, do not edit
