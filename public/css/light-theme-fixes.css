@@ -1,0 +1,60 @@
+/* ── Light Mode Fixes ──────────────────────── */
+/* Fix DataTables FixedColumns dark background in light mode */
+.light-mode .DTFC_ScrollWrapper,
+.light-mode .DTFC_LeftWrapper,
+.light-mode .DTFC_RightWrapper,
+.light-mode .DTFC_Cloned {
+    background-color: #ffffff !important;
+}
+
+/* Table header styling for light mode */
+.light-mode .table thead th,
+.light-mode #dataTableBuilder thead th {
+    background-color: #f4f6f9 !important;
+    color: #495057 !important;
+    border-bottom: 2px solid #dee2e6 !important;
+}
+
+/* Table body for light mode */
+.light-mode .table td {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+}
+
+.light-mode .table tbody tr:nth-child(even) td {
+    background-color: #f8f9fa !important;
+}
+
+/* DataTables empty row */
+.light-mode .dataTables_empty {
+    background-color: #ffffff !important;
+    color: #6c757d !important;
+}
+
+/* DataTables scroll wrapper */
+.light-mode div.dataTables_scrollBody,
+.light-mode div.dataTables_scrollHead {
+    background-color: #ffffff !important;
+}
+
+/* Cards in light mode */
+.light-mode .card {
+    background-color: #ffffff !important;
+}
+
+.light-mode .card-header {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+/* Content wrapper */
+.light-mode .content-wrapper {
+    background-color: #f4f6f9 !important;
+}
+
+/* Footer */
+.light-mode .main-footer {
+    background-color: #ffffff !important;
+    border-top: 1px solid #dee2e6 !important;
+    color: #495057 !important;
+}

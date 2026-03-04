@@ -20,6 +20,8 @@
         rel="stylesheet">
     @if(setting('theme_contrast', '') === 'dark')
         <link rel="stylesheet" href="{{asset('css/dark-theme.css')}}">
+    @else
+        <link rel="stylesheet" href="{{asset('css/light-theme-fixes.css')}}">
     @endif
     @yield('css_custom')
 </head>
