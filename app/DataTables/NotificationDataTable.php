@@ -106,11 +106,15 @@ class NotificationDataTable extends DataTable
      */
     public function query(Notification $model)
     {
-        return $model->newQuery()
-            ->where('notifications.notifiable_id', auth()->id())
+        $query = $model->newQuery()
             ->select("$model->table.*")
             ->orderBy('notifications.updated_at', 'desc');
 
+        if (!auth()->user()->hasRole('admin')) {
+            $query->where('notifications.notifiable_id', auth()->id());
+        }
+
+        return $query;
     }
 
     /**

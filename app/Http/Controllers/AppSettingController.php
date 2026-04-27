@@ -53,7 +53,7 @@ class AppSettingController extends Controller
     {
         if (!config('installer.demo_app')) {
             $input = $request->except(['_method', '_token']);
-            if (Str::endsWith(url()->previous(), "app/globals")) {
+            if (Str::contains(url()->previous(), "app/globals")) {
                 if (empty($input['app_logo'])) {
                     unset($input['app_logo']);
                 }

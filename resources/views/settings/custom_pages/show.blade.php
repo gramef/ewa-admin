@@ -33,6 +33,11 @@
                 </ul>
             </div>
             <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <strong>Where does this page appear?</strong> Custom pages are displayed within the mobile apps (client &amp; provider). They are accessible via the API at:
+                    <code>{{ url('api/custom_pages/' . $customPage->id) }}</code>
+                </div>
                 <div class="row">
                 @include('settings.custom_pages.show_fields')
 

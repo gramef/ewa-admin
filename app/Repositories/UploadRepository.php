@@ -81,8 +81,8 @@ class UploadRepository extends BaseRepository
      */
     public function allMedia($collection = null)
     {
-        $medias = Media::query()->where('model_type', '=', 'App\Models\Upload');
-        if ($collection) {
+        $medias = Media::query();
+        if ($collection && $collection !== 'all') {
             $medias = $medias->where('collection_name', $collection);
         }
         $medias = $medias->orderBy('id', 'desc')->get();

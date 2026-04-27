@@ -43,28 +43,35 @@ class ValidCriteria implements CriteriaInterface
      */
     public function apply($model, RepositoryInterface $repository)
     {
-        return $model->join("discountables", "discountables.coupon_id", "=", "coupons.id")
-            ->where(function ($query) {
-                if ($this->request->has('e_service_id')) {
-                    $query->orWhere(function ($query) {
-                        $query->where('discountable_type', 'App\\Models\\EService')
-                            ->where('discountable_id', $this->request->get('e_service_id'));
-                    });
-                }
-                if ($this->request->has('e_provider_id')) {
-                    $query->orWhere(function ($query) {
-                        $query->where('discountable_type', 'App\\Models\\EProvider')
-                            ->where('discountable_id', $this->request->get('e_provider_id'));
-                    });
-                }
-                if ($this->request->has('categories_id')) {
-                    $query->orWhere(function ($query) {
-                        $query->where('discountable_type', 'App\\Models\\Category')
-                            ->where('discountable_id', explode(',', $this->request->get('categories_id')));
-                    });
-                }
-            })
-            ->where('code', $this->request->get('code'))
+        $hasFilters = $this->request->has('e_service_id')
+            || $this->request->has('e_provider_id')
+            || $this->request->has('categories_id');
+
+        if ($hasFilters) {
+            $model = $model->join("discountables", "discountables.coupon_id", "=", "coupons.id")
+                ->where(function ($query) {
+                    if ($this->request->has('e_service_id')) {
+                        $query->orWhere(function ($query) {
+                            $query->where('discountable_type', 'App\\Models\\EService')
+                                ->where('discountable_id', $this->request->get('e_service_id'));
+                        });
+                    }
+                    if ($this->request->has('e_provider_id')) {
+                        $query->orWhere(function ($query) {
+                            $query->where('discountable_type', 'App\\Models\\EProvider')
+                                ->where('discountable_id', $this->request->get('e_provider_id'));
+                        });
+                    }
+                    if ($this->request->has('categories_id')) {
+                        $query->orWhere(function ($query) {
+                            $query->where('discountable_type', 'App\\Models\\Category')
+                                ->whereIn('discountable_id', explode(',', $this->request->get('categories_id')));
+                        });
+                    }
+                });
+        }
+
+        return $model->where('code', $this->request->get('code'))
             ->where('enabled', '1')->where('expires_at', '>', Carbon::now())->select('coupons.*');
     }
 }

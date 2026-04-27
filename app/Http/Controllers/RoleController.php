@@ -61,6 +61,9 @@ class RoleController extends Controller
             return redirect(route('roles.index'));
         }
         $input = $request->all();
+        if (empty($input['guard_name'])) {
+            $input['guard_name'] = 'web';
+        }
 
         $role = $this->roleRepository->create($input);
 

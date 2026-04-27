@@ -94,6 +94,9 @@ class PermissionController extends Controller
             return redirect(route('permissions.index'));
         }
         $input = $request->all();
+        if (empty($input['guard_name'])) {
+            $input['guard_name'] = 'web';
+        }
 
         $permission = $this->permissionRepository->create($input);
 

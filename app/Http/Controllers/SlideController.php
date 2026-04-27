@@ -81,9 +81,13 @@ class SlideController extends Controller
      */
     public function create()
     {
-        $eService = $this->eServiceRepository->pluck('name', 'id');
+        $eService = $this->eServiceRepository->pluck('name', 'id')->map(function ($name) {
+            return is_array($name) ? ($name['en'] ?? $name[array_key_first($name)] ?? '') : $name;
+        });
 
-        $eProvider = $this->eProviderRepository->pluck('name', 'id');
+        $eProvider = $this->eProviderRepository->pluck('name', 'id')->map(function ($name) {
+            return is_array($name) ? ($name['en'] ?? $name[array_key_first($name)] ?? '') : $name;
+        });
 
 
         $hasCustomField = in_array($this->slideRepository->model(), setting('custom_field_models', []));
@@ -104,6 +108,13 @@ class SlideController extends Controller
     public function store(CreateSlideRequest $request)
     {
         $input = $request->all();
+        // Convert empty optional IDs to null
+        if (empty($input['e_service_id'])) {
+            $input['e_service_id'] = null;
+        }
+        if (empty($input['e_provider_id'])) {
+            $input['e_provider_id'] = null;
+        }
         $customFields = $this->customFieldRepository->findByField('custom_field_model', $this->slideRepository->model());
         try {
             $slide = $this->slideRepository->create($input);
@@ -132,8 +143,12 @@ class SlideController extends Controller
     public function edit($id)
     {
         $slide = $this->slideRepository->findWithoutFail($id);
-        $eService = $this->eServiceRepository->pluck('name', 'id')->prepend(__('lang.slide_e_service_id_placeholder'), '');
-        $eProvider = $this->eProviderRepository->pluck('name', 'id')->prepend(__('lang.slide_e_provider_id_placeholder'), '');
+        $eService = $this->eServiceRepository->pluck('name', 'id')->map(function ($name) {
+            return is_array($name) ? ($name['en'] ?? $name[array_key_first($name)] ?? '') : $name;
+        })->prepend(__('lang.slide_e_service_id_placeholder'), '');
+        $eProvider = $this->eProviderRepository->pluck('name', 'id')->map(function ($name) {
+            return is_array($name) ? ($name['en'] ?? $name[array_key_first($name)] ?? '') : $name;
+        })->prepend(__('lang.slide_e_provider_id_placeholder'), '');
         if (empty($slide)) {
             Flash::error(__('lang.not_found', ['operator' => __('lang.slide')]));
 
