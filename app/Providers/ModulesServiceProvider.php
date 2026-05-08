@@ -105,8 +105,17 @@ class ModulesServiceProvider extends ServiceProvider
     {
         Module::macro('isActivated', function ($name) {
             try {
+                // First try the native check (module exists in Modules/ directory)
                 return Module::isEnabled($name) && Module::isInstalled($name);
             } catch (ModuleNotFoundException $exception) {
+                // Fallback: check modules_statuses.json directly
+                // This handles deployments where module code isn't in the Modules/
+                // directory but modules are tracked via the status file
+                $statusFile = base_path('modules_statuses.json');
+                if (file_exists($statusFile)) {
+                    $statuses = json_decode(file_get_contents($statusFile), true);
+                    return isset($statuses[$name]) && $statuses[$name] === true;
+                }
                 return false;
             }
         });

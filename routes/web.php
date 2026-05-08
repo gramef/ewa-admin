@@ -154,7 +154,7 @@ Route::middleware('auth')->group(function () {
 
 
     Route::resource('eServiceReviews', 'EServiceReviewController')->except([
-        'show'
+        'create', 'store', 'edit', 'update'
     ]);
     Route::resource('payments', 'PaymentController')->except([
         'create', 'store', 'edit', 'update', 'destroy'

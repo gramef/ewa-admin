@@ -3,9 +3,7 @@
         <a data-toggle="tooltip" data-placement="left" title="{{trans('lang.view_details')}}" href="{{ route('eServiceReviews.show', $id) }}" class='btn btn-link'>
             <i class="fas fa-eye"></i> </a> @endcan
 
-    @can('eServiceReviews.edit')
-        <a data-toggle="tooltip" data-placement="left" title="{{trans('lang.e_service_review_edit')}}" href="{{ route('eServiceReviews.edit', $id) }}" class='btn btn-link'>
-            <i class="fas fa-edit"></i> </a> @endcan
+    {{-- Edit removed: Super admins should be able to delete reviews but not edit them --}}
 
-    @can('eServiceReviews.destroy') {!! Form::open(['route' => ['eServiceReviews.destroy', $id], 'method' => 'delete']) !!} {!! Form::button('<i class="fas fa-trash"></i>', [ 'type' => 'submit', 'class' => 'btn btn-link text-danger', 'onclick' => "return confirm('Are you sure?')" ]) !!} {!! Form::close() !!} @endcan
+    @can('eServiceReviews.destroy') {!! Form::open(['route' => ['eServiceReviews.destroy', $id], 'method' => 'delete']) !!} {!! Form::button('<i class="fas fa-trash"></i>', [ 'type' => 'submit', 'class' => 'btn btn-link text-danger', 'onclick' => "return confirm('Are you sure you want to delete this review?')" ]) !!} {!! Form::close() !!} @endcan
 </div>

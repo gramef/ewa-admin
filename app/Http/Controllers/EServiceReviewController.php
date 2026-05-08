@@ -76,17 +76,8 @@ class EServiceReviewController extends Controller
      */
     public function create()
     {
-        $user = $this->userRepository->pluck('name', 'id');
-
-        $eService = $this->eServiceRepository->pluck('name', 'id');
-
-
-        $hasCustomField = in_array($this->eServiceReviewRepository->model(), setting('custom_field_models', []));
-        if ($hasCustomField) {
-            $customFields = $this->customFieldRepository->findByField('custom_field_model', $this->eServiceReviewRepository->model());
-            $html = generateCustomField($customFields);
-        }
-        return view('e_service_reviews.create')->with("customFields", isset($html) ? $html : false)->with("user", $user)->with("eService", $eService);
+        Flash::error(__('Reviews can only be managed (viewed or deleted), not created from admin.'));
+        return redirect(route('eServiceReviews.index'));
     }
 
     /**
@@ -98,18 +89,7 @@ class EServiceReviewController extends Controller
      */
     public function store(CreateEServiceReviewRequest $request)
     {
-        $input = $request->all();
-        $customFields = $this->customFieldRepository->findByField('custom_field_model', $this->eServiceReviewRepository->model());
-        try {
-            $eServiceReview = $this->eServiceReviewRepository->create($input);
-            $eServiceReview->customFieldsValues()->createMany(getCustomFieldsValues($customFields, $request));
-
-        } catch (ValidatorException $e) {
-            Flash::error($e->getMessage());
-        }
-
-        Flash::success(__('lang.saved_successfully', ['operator' => __('lang.e_service_review')]));
-
+        Flash::error(__('Reviews can only be managed (viewed or deleted), not created from admin.'));
         return redirect(route('eServiceReviews.index'));
     }
 
@@ -143,24 +123,8 @@ class EServiceReviewController extends Controller
      */
     public function edit(int $id)
     {
-        $this->eServiceReviewRepository->pushCriteria(new EServiceReviewsOfUserCriteria(auth()->id()));
-        $eServiceReview = $this->eServiceReviewRepository->findWithoutFail($id);
-        if (empty($eServiceReview)) {
-            Flash::error(__('lang.not_found', ['operator' => __('lang.e_service_review')]));
-            return redirect(route('eServiceReviews.index'));
-        }
-        $user = $this->userRepository->pluck('name', 'id');
-
-        $eService = $this->eServiceRepository->pluck('name', 'id');
-
-
-        $customFieldsValues = $eServiceReview->customFieldsValues()->with('customField')->get();
-        $customFields = $this->customFieldRepository->findByField('custom_field_model', $this->eServiceReviewRepository->model());
-        $hasCustomField = in_array($this->eServiceReviewRepository->model(), setting('custom_field_models', []));
-        if ($hasCustomField) {
-            $html = generateCustomField($customFields, $customFieldsValues);
-        }
-        return view('e_service_reviews.edit')->with('eServiceReview', $eServiceReview)->with("customFields", isset($html) ? $html : false)->with("user", $user)->with("eService", $eService);
+        Flash::error(__('Reviews can only be managed (viewed or deleted), not edited from admin.'));
+        return redirect(route('eServiceReviews.index'));
     }
 
     /**
@@ -174,27 +138,7 @@ class EServiceReviewController extends Controller
      */
     public function update(int $id, UpdateEServiceReviewRequest $request)
     {
-        $this->eServiceReviewRepository->pushCriteria(new EServiceReviewsOfUserCriteria(auth()->id()));
-        $eServiceReview = $this->eServiceReviewRepository->findWithoutFail($id);
-
-        if (empty($eServiceReview)) {
-            Flash::error(__('lang.not_found', ['operator' => __('lang.e_service_review')]));
-            return redirect(route('eServiceReviews.index'));
-        }
-        $input = $request->all();
-        $customFields = $this->customFieldRepository->findByField('custom_field_model', $this->eServiceReviewRepository->model());
-        try {
-            $eServiceReview = $this->eServiceReviewRepository->update($input, $id);
-
-
-            foreach (getCustomFieldsValues($customFields, $request) as $value) {
-                $eServiceReview->customFieldsValues()
-                    ->updateOrCreate(['custom_field_id' => $value['custom_field_id']], $value);
-            }
-        } catch (ValidatorException $e) {
-            Flash::error($e->getMessage());
-        }
-        Flash::success(__('lang.updated_successfully', ['operator' => __('lang.e_service_review')]));
+        Flash::error(__('Reviews can only be managed (viewed or deleted), not edited from admin.'));
         return redirect(route('eServiceReviews.index'));
     }
 

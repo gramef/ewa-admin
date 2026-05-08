@@ -123,54 +123,74 @@ class StripeController extends ParentBookingController
 
     public function payBooking(Request $request)
     {
-        $intent = $request->input('payment_intent');
-        Log::info($intent);
-        $booking = $this->bookingRepository->findByField('id', $request->input('booking_id'))->first();
-        if (($intent == 'Succeeded') || ($intent == 'requires_action')){
-            $this->paymentMethodId = 7; // Stripe method
-            try {
-                $input['amount'] = $booking->getTotal();
-                $input['description'] = trans("lang.done");
-                $input['payment_status_id'] = 2;
-                $input['payment_method_id'] = $this->paymentMethodId;
-                $input['user_id'] = $booking->user_id;
+        $intentId = $request->input('payment_intent');
+        $bookingId = $request->input('booking_id');
+        Log::info('payBooking called', ['intent' => $intentId, 'booking_id' => $bookingId]);
+
+        $booking = $this->bookingRepository->findByField('id', $bookingId)->first();
+
+        if (empty($booking)) {
+            return response()->json(['error' => 'Booking not found'], 404);
+        }
+
+        try {
+            // Set Stripe API key and verify the PaymentIntent with Stripe
+            Stripe::setApiKey(setting('stripe_secret'));
+            $intent = PaymentIntent::retrieve($intentId);
+
+            Log::info('Stripe PaymentIntent status', [
+                'intent_id' => $intent->id,
+                'status' => $intent->status,
+                'booking_id' => $bookingId,
+            ]);
+
+            if ($intent->status === 'succeeded') {
+                $this->paymentMethodId = 7; // Stripe method
                 try {
-                    $payment = $this->paymentRepository->create($input);
+                    $input['amount'] = $booking->getTotal();
+                    $input['description'] = trans("lang.done");
+                    $input['payment_status_id'] = 2;
+                    $input['payment_method_id'] = $this->paymentMethodId;
+                    $input['user_id'] = $booking->user_id;
+                    try {
+                        $payment = $this->paymentRepository->create($input);
+                    } catch (ValidatorException $e) {
+                        Log::error($e->getMessage());
+                    }
+                    if ($payment != null) {
+                        $this->bookingRepository->update(['payment_id' => $payment->id], $booking->id);
+                        event(new BookingChangedEvent($booking->e_provider));
+                    }
                 } catch (ValidatorException $e) {
                     Log::error($e->getMessage());
                 }
-                if ($payment != null) {
-                    $this->bookingRepository->update(['payment_id' => $payment->id],$booking->id);
-                    event(new BookingChangedEvent($booking->e_provider));
+                // Ensure booking has payment relation loaded for notification
+                if (isset($payment) && $payment) {
+                    $payment->load('paymentStatus');
+                    $booking->setRelation('payment', $payment);
+                } else {
+                    $booking = $this->bookingRepository->with(['payment.paymentStatus', 'user'])->find($booking->id);
                 }
-            } catch (ValidatorException $e) {
-                Log::error($e->getMessage());
-            }
-            // Ensure booking has payment relation loaded for notification
-            if (isset($payment) && $payment) {
-                $payment->load('paymentStatus');
-                $booking->setRelation('payment', $payment);
-            } else {
-                // Fallback: reload booking with payment relationships
-                $booking = $this->bookingRepository->with(['payment.paymentStatus','user'])->find($booking->id);
-            }
-            // Structured logs to avoid casting objects to strings
-            if ($booking && $booking->payment) {
-                Log::info('Payment relation loaded', [
+                Log::info('Payment verified and recorded', [
                     'booking_id' => $booking->id,
-                    'payment_id' => $booking->payment->id,
-                    'payment_status' => optional($booking->payment->paymentStatus)->status,
+                    'payment_id' => optional($booking->payment)->id,
+                ]);
+                Notification::send($booking->user, new StatusChangedPayment($booking));
+                return response()->json(['success' => true, 'intent' => $intentId, 'status' => 'succeeded']);
+            } elseif ($intent->status === 'requires_action' || $intent->status === 'requires_confirmation') {
+                return response()->json([
+                    'success' => false,
+                    'requires_action' => true,
+                    'client_secret' => $intent->client_secret,
+                    'status' => $intent->status,
                 ]);
             } else {
-                Log::info('Payment relation missing', [
-                    'booking_id' => optional($booking)->id,
-                ]);
+                Log::warning('Stripe payment not succeeded', ['status' => $intent->status]);
+                return response()->json(['error' => 'Payment not completed. Status: ' . $intent->status], 400);
             }
-            Notification::send($booking->user, new StatusChangedPayment($booking));
-            return response()->json(['intent' => $intent]);
-        }
-        else {
-            return response()->json(['error' => 'Payment failed']);
+        } catch (ApiErrorException $e) {
+            Log::error('Stripe API error in payBooking', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Payment verification failed: ' . $e->getMessage()], 500);
         }
     }
 }

@@ -35,12 +35,7 @@
                             <a class="nav-link active" href="{!! url()->current() !!}"><i class="fa fa-list mr-2"></i>{{trans('lang.e_service_review_table')}}
                             </a>
                         </li>
-                        @can('eServiceReviews.create')
-                            <li class="nav-item">
-                                <a class="nav-link" href="{!! route('eServiceReviews.create') !!}"><i class="fa fa-plus mr-2"></i>{{trans('lang.e_service_review_create')}}
-                                </a>
-                            </li>
-                        @endcan
+                        {{-- Create removed: Admins can only view and delete reviews --}}
                     </div>
                     @include('layouts.right_toolbar', compact('dataTable'))
                 </ul>

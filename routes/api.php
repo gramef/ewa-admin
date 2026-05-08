@@ -143,7 +143,12 @@ Route::middleware('auth:api')->group(function () {
     Route::get('payments', 'API\PaymentAPIController@index')->name('payments.index');
     Route::get('payments/{id}', 'API\PaymentAPIController@show')->name('payments.show');
     Route::post('payments/stripe/create-payment-intent', 'StripeController@createPaymentIntent');
-    Route::get('payments/stripe/pay-booking', 'StripeController@PayBooking');
+    Route::post('payments/stripe/pay-booking', 'StripeController@payBooking');
+    // Alias route matching Flutter client's payBooking URL pattern
+    Route::post('payments/intent/{payment_intent}/{booking_id}', function(\Illuminate\Http\Request $request, $payment_intent, $booking_id) {
+        $request->merge(['payment_intent' => $payment_intent, 'booking_id' => $booking_id]);
+        return app(\App\Http\Controllers\StripeController::class)->payBooking($request);
+    });
     Route::resource('payment_methods', 'API\PaymentMethodAPIController')->only([
         'index'
     ]);

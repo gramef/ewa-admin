@@ -46,9 +46,17 @@ class BookingsOfUserCriteria implements CriteriaInterface
         if (auth()->user()->hasRole('admin')) {
             return $model;
         } else if (auth()->user()->hasRole('provider')) {
+            // Show both: bookings AT their salon AND bookings they made as a customer
             $eProviderId = DB::raw("json_extract(e_provider, '$.id')");
-            return $model->join("e_provider_users", "e_provider_users.e_provider_id", "=", $eProviderId)
-                ->where('e_provider_users.user_id', $this->userId)
+            return $model->where(function ($query) use ($eProviderId) {
+                    $query->where('bookings.user_id', $this->userId)
+                          ->orWhereIn('bookings.id', function ($sub) use ($eProviderId) {
+                              $sub->select('bookings.id')
+                                  ->from('bookings')
+                                  ->join('e_provider_users', 'e_provider_users.e_provider_id', '=', $eProviderId)
+                                  ->where('e_provider_users.user_id', $this->userId);
+                          });
+                })
                 ->groupBy('bookings.id')
                 ->select('bookings.*');
 

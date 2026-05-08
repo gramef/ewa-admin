@@ -108,6 +108,10 @@ class StatusChangedBooking extends Notification
     {
         return [
             'booking_id' => $this->booking['id'],
+            'booking_status' => $this->booking->bookingStatus->status ?? '',
+            'e_service_name' => $this->booking->e_service->name ?? '',
+            'e_provider_name' => $this->booking->e_provider->name ?? '',
+            'user_name' => $this->booking->user->name ?? '',
         ];
     }
 }
