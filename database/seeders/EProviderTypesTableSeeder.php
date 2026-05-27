@@ -22,27 +22,44 @@ class EProviderTypesTableSeeder extends Seeder
     public function run()
     {
 
-
         DB::table('e_provider_types')->delete();
 
         DB::table('e_provider_types')->insert(array(
             0 =>
                 array(
-                    'id' => 2,
-                    'name' => 'Company',
-                    'commission' => 75.0,
+                    'id' => 1,
+                    'name' => 'Hair Salon',
+                    'commission' => 80.0,
                     'disabled' => 0,
-                    'created_at' => '2021-01-13 18:05:35',
-                    'updated_at' => '2021-02-01 21:22:19',
+                    'created_at' => '2024-01-01 00:00:00',
+                    'updated_at' => '2024-01-01 00:00:00',
                 ),
             1 =>
                 array(
-                    'id' => 3,
-                    'name' => 'Freelancer',
-                    'commission' => 50.0,
+                    'id' => 2,
+                    'name' => 'Mobile Stylist',
+                    'commission' => 75.0,
                     'disabled' => 0,
-                    'created_at' => '2021-01-17 19:27:18',
-                    'updated_at' => '2021-02-24 18:57:30',
+                    'created_at' => '2024-01-01 00:00:00',
+                    'updated_at' => '2024-01-01 00:00:00',
+                ),
+            2 =>
+                array(
+                    'id' => 3,
+                    'name' => 'Home-Based Stylist',
+                    'commission' => 70.0,
+                    'disabled' => 0,
+                    'created_at' => '2024-01-01 00:00:00',
+                    'updated_at' => '2024-01-01 00:00:00',
+                ),
+            3 =>
+                array(
+                    'id' => 4,
+                    'name' => 'Barbershop',
+                    'commission' => 80.0,
+                    'disabled' => 0,
+                    'created_at' => '2024-01-01 00:00:00',
+                    'updated_at' => '2024-01-01 00:00:00',
                 ),
         ));
 

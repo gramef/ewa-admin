@@ -44,7 +44,7 @@ class EServiceReviewAPIController extends Controller
     {
         try {
             $this->eServiceReviewRepository->pushCriteria(new RequestCriteria($request));
-            if (auth()->check()) {
+            if (auth()->check() && !str_contains($request->input('search', ''), 'e_service_id')) {
                 $this->eServiceReviewRepository->pushCriteria(new EServiceReviewsOfUserCriteria(auth()->id()));
             }
             $this->eServiceReviewRepository->pushCriteria(new LimitOffsetCriteria($request));

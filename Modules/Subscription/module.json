@@ -1,0 +1,13 @@
+{
+    "name": "Subscription",
+    "alias": "subscription",
+    "description": "Vendor subscription management for EWA platform",
+    "keywords": ["subscription", "plan"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Subscription\\Providers\\SubscriptionServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

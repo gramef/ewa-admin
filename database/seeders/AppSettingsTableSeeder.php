@@ -54,12 +54,12 @@ class AppSettingsTableSeeder extends Seeder
             array(
                 'id' => 18,
                 'key' => 'app_name',
-                'value' => 'Home Services',
+                'value' => 'EWA Hair',
             ),
             array(
                 'id' => 19,
                 'key' => 'app_short_description',
-                'value' => 'Manage Mobile Application',
+                'value' => 'Premium Hair Styling Platform',
             ),
             array(
                 'id' => 20,
@@ -99,12 +99,12 @@ class AppSettingsTableSeeder extends Seeder
             array(
                 'id' => 27,
                 'key' => 'mail_from_name',
-                'value' => 'Smarter Vision',
+                'value' => 'EWA Hair',
             ),
             array(
                 'id' => 30,
                 'key' => 'timezone',
-                'value' => 'America/Montserrat',
+                'value' => 'Europe/London',
             ),
             array(
                 'id' => 32,
@@ -204,7 +204,7 @@ class AppSettingsTableSeeder extends Seeder
             array(
                 'id' => 107,
                 'key' => 'default_currency',
-                'value' => '$',
+                'value' => '£',
             ),
             array(
                 'id' => 108,
@@ -314,7 +314,7 @@ class AppSettingsTableSeeder extends Seeder
             array(
                 'id' => 129,
                 'key' => 'default_currency_code',
-                'value' => 'USD',
+                'value' => 'GBP',
             ),
             array(
                 'id' => 130,
@@ -403,17 +403,27 @@ class AppSettingsTableSeeder extends Seeder
             array(
                 'id' => 147,
                 'key' => 'provider_app_name',
-                'value' => 'Service Provider',
+                'value' => 'StylePro',
             ),
             array(
                 'id' => 148,
                 'key' => 'default_country_code',
-                'value' => 'DE',
+                'value' => 'GB',
             ),
             array(
                 'id' => 149,
                 'key' => 'enable_otp',
                 'value' => '1',
+            ),
+            array(
+                'id' => 150,
+                'key' => 'enable_apple',
+                'value' => '1',
+            ),
+            array(
+                'id' => 151,
+                'key' => 'apple_client_id',
+                'value' => 'com.beladio.ewahair.web',
             ),
         ));
 

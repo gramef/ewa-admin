@@ -134,7 +134,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('uploads/store', 'API\UploadAPIController@store');
     Route::post('uploads/clear', 'API\UploadAPIController@clear');
     Route::post('users/{user}', 'API\UserAPIController@update');
-    Route::delete('users', 'API\UserAPIController@destroy');
+    Route::delete('users/{user?}', 'API\UserAPIController@destroy');
 
     Route::get('payments/byMonth', 'API\PaymentAPIController@byMonth')->name('payments.byMonth');
     Route::post('payments/wallets/{id}', 'API\PaymentAPIController@wallets')->name('payments.wallets');
@@ -154,6 +154,8 @@ Route::middleware('auth:api')->group(function () {
     ]);
     Route::post('e_service_reviews', 'API\EServiceReviewAPIController@store')->name('e_service_reviews.store');
 
+    // AI Virtual Hair Try-On
+    Route::post('try-style', 'API\TryStyleAPIController@generate');
 
     Route::resource('favorites', 'API\FavoriteAPIController');
     Route::resource('addresses', 'API\AddressAPIController');

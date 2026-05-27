@@ -146,6 +146,7 @@ class UserAPIController extends Controller
                 'currency_right' => '',
                 'enable_paypal' => '',
                 'enable_stripe' => '',
+                'stripe_key' => '',
                 'enable_razorpay' => '',
                 'main_color' => '',
                 'main_dark_color' => '',
@@ -256,7 +257,20 @@ class UserAPIController extends Controller
     public function destroy(): JsonResponse
     {
         try {
-            $user = $this->userRepository->delete(auth()->id());
+            $userId = auth()->id();
+
+            // Clean up related data
+            try {
+                \App\Models\Favorite::where('user_id', $userId)->delete();
+                \App\Models\Address::where('user_id', $userId)->delete();
+                \App\Models\EServiceReview::where('user_id', $userId)->delete();
+                // Soft-handle bookings — don't delete, just anonymize
+                \App\Models\Booking::where('user_id', $userId)->update(['user_id' => null]);
+            } catch (\Exception $e) {
+                \Log::warning('Cleanup during account deletion: ' . $e->getMessage());
+            }
+
+            $user = $this->userRepository->delete($userId);
         } catch (Exception $e) {
             return $this->sendError($e->getMessage());
         }
