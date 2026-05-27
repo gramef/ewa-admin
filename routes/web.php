@@ -206,4 +206,18 @@ Route::middleware('auth')->group(function () {
     Route::resource('walletTransactions', 'WalletTransactionController')->except([
         'show', 'edit', 'update', 'destroy'
     ]);
+
+    // ── EWA Operations ──
+    // KYC Review Centre
+    Route::get('admin/kyc', 'Admin\AdminKycController@index')->name('admin.kyc.index');
+    Route::get('admin/kyc/{id}', 'Admin\AdminKycController@show')->name('admin.kyc.show');
+    Route::get('admin/kyc/{id}/document/{type}', 'Admin\AdminKycController@document')->name('admin.kyc.document');
+    Route::post('admin/kyc/{id}/approve', 'Admin\AdminKycController@approve')->name('admin.kyc.approve');
+    Route::post('admin/kyc/{id}/reject', 'Admin\AdminKycController@reject')->name('admin.kyc.reject');
+
+    // Admin Notification Centre
+    Route::get('admin/notifications', 'Admin\AdminNotificationController@index')->name('admin.notifications.index');
+
+    // Platform Health Dashboard
+    Route::get('admin/platform-health', 'Admin\PlatformHealthController@index')->name('admin.platform-health.index');
 });

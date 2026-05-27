@@ -164,6 +164,12 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('notifications', 'API\NotificationAPIController');
     Route::resource('bookings', 'API\BookingAPIController');
 
+    // ── Chat / Messaging ──
+    Route::get('chat_rooms', 'API\ChatAPIController@index');
+    Route::post('chat_rooms', 'API\ChatAPIController@store');
+    Route::get('chat_rooms/{roomId}/messages', 'API\ChatAPIController@messages');
+    Route::post('chat_rooms/{roomId}/messages', 'API\ChatAPIController@sendMessage');
+
     Route::resource('earnings', 'API\EarningAPIController');
 
     Route::resource('e_provider_payouts', 'API\EProviderPayoutAPIController');
@@ -178,9 +184,22 @@ Route::middleware('auth:api')->group(function () {
     ]);
     Route::get('wallet_transactions', 'API\WalletTransactionAPIController@index')->name('wallet_transactions.index');
 
+    // Wallet withdrawal
+    Route::post('wallet/withdraw', 'API\WalletWithdrawalController@requestWithdrawal');
+    Route::get('wallet/transactions', 'API\WalletWithdrawalController@transactions');
+
+    // Featured service payment
+    Route::get('featured/price', 'API\FeaturedServiceController@getPrice');
+    Route::post('featured/create-intent', 'API\FeaturedServiceController@createIntent');
+    Route::post('featured/confirm', 'API\FeaturedServiceController@confirm');
+
     Route::post('providers/location/', 'API\EProviderLocationAPIController@updateLocation');
 
     Route::get('providers/location/{e_provider_id}/{booking_id}', 'API\EProviderLocationAPIController@getLocation');
+
+    // KYC document verification
+    Route::get('kyc/status', 'API\KycController@status');
+    Route::post('kyc/submit', 'API\KycController@submit');
 });
 
 /*

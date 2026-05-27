@@ -6,6 +6,34 @@
             <p>{{trans('lang.dashboard')}}</p></a>
     </li>
 @endcan
+
+<!-- EWA Operations -->
+<li class="nav-header">EWA Operations</li>
+<li class="nav-item">
+    <a class="nav-link {{ Request::is('admin/kyc*') ? 'active' : '' }}" href="{!! url('admin/kyc') !!}">@if($icons)
+            <i class="nav-icon fas fa-id-card"></i>
+        @endif
+        <p>KYC Verification
+            @php
+                $pendingKyc = \App\Models\EProvider::where('kyc_status', 'pending')->count();
+            @endphp
+            @if($pendingKyc > 0)
+                <span class="right badge badge-warning">{{ $pendingKyc }}</span>
+            @endif
+        </p></a>
+</li>
+<li class="nav-item">
+    <a class="nav-link {{ Request::is('admin/notifications*') ? 'active' : '' }}" href="{!! url('admin/notifications') !!}">@if($icons)
+            <i class="nav-icon fas fa-bell"></i>
+        @endif
+        <p>Notifications Centre</p></a>
+</li>
+<li class="nav-item">
+    <a class="nav-link {{ Request::is('admin/platform-health*') ? 'active' : '' }}" href="{!! url('admin/platform-health') !!}">@if($icons)
+            <i class="nav-icon fas fa-heartbeat"></i>
+        @endif
+        <p>Platform Health</p></a>
+</li>
 @can('modules.index')
     <li class="nav-item">
         <a class="nav-link {{ Request::is('modules*') ? 'active' : '' }}" href="{!! route('modules.index') !!}">@if($icons)
@@ -16,7 +44,7 @@
                 @endif</p></a>
     </li>
 @endcan
-@if(!Module::isActivated('Subscription'))
+@if(!(Module::has('Subscription') && Module::isEnabled('Subscription')))
     @can('notifications.index')
         <li class="nav-item">
             <a class="nav-link {{ Request::is('notifications*') ? 'active' : '' }}" href="{!! route('notifications.index') !!}">@if($icons)
@@ -63,7 +91,7 @@
                         @endif<p>{{trans('lang.requested_e_providers_plural')}}</p></a>
                 </li>
             @endcan
-            @if(Module::isActivated('EProviderDocuments'))
+            @if(Module::has('EProviderDocuments') && Module::isEnabled('EProviderDocuments'))
                 @can('documents.index')
                     <li class="nav-item">
                         <a class="nav-link {{ Request::is('documents*') ? 'active' : '' }}" href="{!! route('documents.index') !!}">@if($icons)
@@ -227,7 +255,7 @@
         </ul>
     </li>
 @endcan
-@if(Module::isActivated('Shop'))
+@if(Module::has('Shop') && Module::isEnabled('Shop'))
     @can('stores.index')
         <li class="nav-header">{{trans('shop::lang.shop')}}</li>
     @endcan
@@ -356,7 +384,7 @@
     @endcan
 @endif
 
-@if(Module::isActivated('Subscription'))
+@if(Module::has('Subscription') && Module::isEnabled('Subscription'))
     @can('subscriptionPackages.index')
         <li class="nav-header">{{trans('subscription::lang.subscriptions')}}</li>
     @endcan

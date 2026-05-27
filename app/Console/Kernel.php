@@ -26,6 +26,12 @@ class Kernel extends ConsoleKernel
     {
         // Send booking reminders every 15 minutes
         $schedule->command('bookings:send-reminders')->everyFifteenMinutes();
+
+        // Process subscription expiry checks daily at 8 AM
+        $schedule->command('subscriptions:process-expiry')->dailyAt('08:00');
+
+        // Send subscription expiry notifications daily at 9 AM (A02)
+        $schedule->command('ewa:subscription-notifications')->dailyAt('09:00');
     }
 
     /**

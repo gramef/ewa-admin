@@ -19,7 +19,10 @@ class Permissions
     private array $exceptNames = [
         'LaravelInstaller*',
         'LaravelUpdater*',
-        'debugbar*'
+        'debugbar*',
+        'admin.kyc.*',
+        'admin.notifications.*',
+        'admin.platform-health.*',
     ];
 
     private array $exceptControllers = [
