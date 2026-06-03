@@ -218,6 +218,10 @@ Route::middleware('auth')->group(function () {
     // Admin Notification Centre
     Route::get('admin/notifications', 'Admin\AdminNotificationController@index')->name('admin.notifications.index');
 
+    // Push Notification Centre
+    Route::get('admin/push-notifications', 'Admin\PushNotificationController@create')->name('admin.push.create');
+    Route::post('admin/push-notifications/send', 'Admin\PushNotificationController@send')->name('admin.push.send');
+
     // Platform Health Dashboard
     Route::get('admin/platform-health', 'Admin\PlatformHealthController@index')->name('admin.platform-health.index');
 });

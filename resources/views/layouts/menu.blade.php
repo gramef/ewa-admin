@@ -29,6 +29,12 @@
         <p>Notifications Centre</p></a>
 </li>
 <li class="nav-item">
+    <a class="nav-link {{ Request::is('admin/push-notifications*') ? 'active' : '' }}" href="{!! url('admin/push-notifications') !!}">@if($icons)
+            <i class="nav-icon fas fa-paper-plane"></i>
+        @endif
+        <p>Push Notifications</p></a>
+</li>
+<li class="nav-item">
     <a class="nav-link {{ Request::is('admin/platform-health*') ? 'active' : '' }}" href="{!! url('admin/platform-health') !!}">@if($icons)
             <i class="nav-icon fas fa-heartbeat"></i>
         @endif
