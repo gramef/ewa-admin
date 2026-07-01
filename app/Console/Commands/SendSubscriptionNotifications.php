@@ -38,7 +38,7 @@ class SendSubscriptionNotifications extends Command
         // 7-day warning
         $sevenDays = $now->copy()->addDays(7)->format('Y-m-d');
         $expiring7 = $model::whereDate('expires_at', $sevenDays)
-            ->with('eProvider.user')
+            ->with('eProvider.users')
             ->get();
 
         foreach ($expiring7 as $sub) {
@@ -49,7 +49,7 @@ class SendSubscriptionNotifications extends Command
         // 3-day warning
         $threeDays = $now->copy()->addDays(3)->format('Y-m-d');
         $expiring3 = $model::whereDate('expires_at', $threeDays)
-            ->with('eProvider.user')
+            ->with('eProvider.users')
             ->get();
 
         foreach ($expiring3 as $sub) {
@@ -60,7 +60,7 @@ class SendSubscriptionNotifications extends Command
         // Day-of expiry
         $today = $now->format('Y-m-d');
         $expiringToday = $model::whereDate('expires_at', $today)
-            ->with('eProvider.user')
+            ->with('eProvider.users')
             ->get();
 
         foreach ($expiringToday as $sub) {
@@ -77,9 +77,10 @@ class SendSubscriptionNotifications extends Command
     private function sendNotification($subscription, $type)
     {
         $provider = $subscription->eProvider;
-        if (!$provider || !$provider->user) return;
+        if (!$provider) return;
 
-        $user = $provider->user;
+        $user = $provider->users()->first();
+        if (!$user) return;
         $email = $user->email;
         $providerName = is_array($provider->name) ? ($provider->name['en'] ?? 'Vendor') : ($provider->name ?? 'Vendor');
         $expiryDate = Carbon::parse($subscription->expires_at)->format('d M Y');
