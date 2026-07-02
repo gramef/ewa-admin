@@ -67,7 +67,7 @@
                         <tr>
                             <td>
                                 <strong>{{ is_array($p->name) ? ($p->name['en'] ?? '') : $p->name }}</strong><br>
-                                <small class="text-muted">{{ $p->user->email ?? 'N/A' }}</small>
+                                <small class="text-muted">{{ optional($p->user->first())->email ?? 'N/A' }}</small>
                             </td>
                             <td><span class="badge badge-info">{{ ucfirst(str_replace('_', ' ', $p->kyc_id_type)) }}</span></td>
                             <td>{{ $p->kyc_submitted_at ? \Carbon\Carbon::parse($p->kyc_submitted_at)->diffForHumans() : 'N/A' }}</td>

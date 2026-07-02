@@ -93,10 +93,20 @@ class PlatformHealthController extends Controller
             'total_bookings' => Booking::count(),
             'bookings_today' => Booking::whereDate('created_at', Carbon::today())->count(),
             'total_revenue' => Payment::where('payment_status_id', 2)->sum('amount'),
-            'pending_kyc' => EProvider::where('kyc_status', 'pending')->count(),
+            'pending_kyc' => $this->safePendingKycCount(),
         ];
 
         return view('dashboard.platform_health', compact('health', 'stats'));
+    }
+
+    private function safePendingKycCount(): int
+    {
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('e_providers', 'kyc_status')) {
+                return EProvider::where('kyc_status', 'pending')->count();
+            }
+        } catch (\Exception $e) {}
+        return 0;
     }
 
     private function formatBytes($bytes, $precision = 2)

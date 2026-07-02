@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -15,28 +16,55 @@ use Illuminate\Support\Facades\Storage;
 class AdminKycController extends Controller
 {
     /**
+     * Check if KYC columns exist in the database
+     */
+    private function kycColumnsExist(): bool
+    {
+        try {
+            return Schema::hasColumn('e_providers', 'kyc_status');
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
      * KYC dashboard — list all submissions grouped by status.
      */
     public function index()
     {
-        $pending = EProvider::where('kyc_status', 'pending')
-            ->with('user')
-            ->orderBy('kyc_submitted_at', 'desc')
-            ->get();
+        if (!$this->kycColumnsExist()) {
+            $pending = collect([]);
+            $verified = collect([]);
+            $rejected = collect([]);
+            $needsMigration = true;
+            return view('dashboard.kyc_review', compact('pending', 'verified', 'rejected', 'needsMigration'));
+        }
 
-        $verified = EProvider::where('kyc_status', 'verified')
-            ->with('user')
-            ->orderBy('kyc_reviewed_at', 'desc')
-            ->limit(50)
-            ->get();
+        try {
+            $pending = EProvider::where('kyc_status', 'pending')
+                ->with('user')
+                ->orderBy('kyc_submitted_at', 'desc')
+                ->get();
 
-        $rejected = EProvider::where('kyc_status', 'rejected')
-            ->with('user')
-            ->orderBy('kyc_reviewed_at', 'desc')
-            ->limit(50)
-            ->get();
+            $verified = EProvider::where('kyc_status', 'verified')
+                ->with('user')
+                ->orderBy('kyc_reviewed_at', 'desc')
+                ->limit(50)
+                ->get();
 
-        return view('dashboard.kyc_review', compact('pending', 'verified', 'rejected'));
+            $rejected = EProvider::where('kyc_status', 'rejected')
+                ->with('user')
+                ->orderBy('kyc_reviewed_at', 'desc')
+                ->limit(50)
+                ->get();
+        } catch (\Exception $e) {
+            $pending = collect([]);
+            $verified = collect([]);
+            $rejected = collect([]);
+        }
+
+        $needsMigration = false;
+        return view('dashboard.kyc_review', compact('pending', 'verified', 'rejected', 'needsMigration'));
     }
 
     /**

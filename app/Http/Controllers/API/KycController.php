@@ -26,7 +26,7 @@ class KycController extends Controller
             return $this->sendError('Unauthorized', 401);
         }
 
-        $provider = EProvider::where('user_id', $user->id)->first();
+        $provider = EProvider::whereHas('users', fn($q) => $q->where('users.id', $user->id))->first();
         if (!$provider) {
             return $this->sendResponse([
                 'kyc_status' => 'not_submitted',
@@ -53,7 +53,7 @@ class KycController extends Controller
             return $this->sendError('Unauthorized', 401);
         }
 
-        $provider = EProvider::where('user_id', $user->id)->first();
+        $provider = EProvider::whereHas('users', fn($q) => $q->where('users.id', $user->id))->first();
         if (!$provider) {
             return $this->sendError('No provider profile found');
         }
