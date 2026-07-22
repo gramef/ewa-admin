@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\VendorApproved;
+use App\Mail\VendorDeclined;
+use App\Mail\VendorDocumentsRequired;
 use App\Models\EProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -106,8 +110,21 @@ class AdminKycController extends Controller
 
         Log::info("KYC APPROVED for provider #{$id} by admin #" . auth()->id());
 
+        // Send Welcome email (SOP Template 3 — Application Approved)
+        $user = $provider->users()->first();
+        if ($user && $user->email) {
+            $vendorName = $user->name ?? 'there';
+            $vendorPwaUrl = config('app.vendor_pwa_url', 'https://ewa-vendor-pwa.vercel.app');
+            try {
+                Mail::to($user->email)->send(new VendorApproved($vendorName, $vendorPwaUrl));
+                Log::info("Welcome email sent to {$user->email} for provider #{$id}");
+            } catch (\Exception $e) {
+                Log::error("Failed to send welcome email to {$user->email}: " . $e->getMessage());
+            }
+        }
+
         return redirect()->route('admin.kyc.index')
-            ->with('success', "KYC approved for {$provider->name}");
+            ->with('success', "KYC approved for {$provider->name}. Welcome email sent.");
     }
 
     /**
@@ -126,7 +143,50 @@ class AdminKycController extends Controller
 
         Log::info("KYC REJECTED for provider #{$id}: {$request->reason}");
 
+        // Send Declined email (SOP Template 4 — Application Declined)
+        $user = $provider->users()->first();
+        if ($user && $user->email) {
+            $vendorName = $user->name ?? 'there';
+            try {
+                Mail::to($user->email)->send(new VendorDeclined($vendorName, $request->reason));
+                Log::info("Decline email sent to {$user->email} for provider #{$id}");
+            } catch (\Exception $e) {
+                Log::error("Failed to send decline email to {$user->email}: " . $e->getMessage());
+            }
+        }
+
         return redirect()->route('admin.kyc.index')
-            ->with('warning', "KYC rejected for {$provider->name}");
+            ->with('warning', "KYC rejected for {$provider->name}. Decline email sent.");
+    }
+
+    /**
+     * Request additional documents from a vendor (SOP Template 2).
+     */
+    public function requestDocuments(Request $request, $id)
+    {
+        $request->validate(['notes' => 'nullable|string|max:1000']);
+
+        $provider = EProvider::findOrFail($id);
+        $user = $provider->users()->first();
+
+        if (!$user || !$user->email) {
+            return redirect()->back()->with('error', 'No email found for this vendor.');
+        }
+
+        $vendorName = $user->name ?? 'there';
+        $vendorPwaUrl = config('app.vendor_pwa_url', 'https://ewa-vendor-pwa.vercel.app');
+        $notes = $request->input('notes', '');
+
+        try {
+            Mail::to($user->email)->send(new VendorDocumentsRequired($vendorName, $vendorPwaUrl, $notes));
+            Log::info("Documents required email sent to {$user->email} for provider #{$id}");
+
+            return redirect()->back()
+                ->with('success', "Document request email sent to {$user->email}");
+        } catch (\Exception $e) {
+            Log::error("Failed to send documents required email: " . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Failed to send email: ' . $e->getMessage());
+        }
     }
 }

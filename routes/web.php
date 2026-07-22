@@ -214,6 +214,7 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/kyc/{id}/document/{type}', 'Admin\AdminKycController@document')->name('admin.kyc.document');
     Route::post('admin/kyc/{id}/approve', 'Admin\AdminKycController@approve')->name('admin.kyc.approve');
     Route::post('admin/kyc/{id}/reject', 'Admin\AdminKycController@reject')->name('admin.kyc.reject');
+    Route::post('admin/kyc/{id}/request-documents', 'Admin\AdminKycController@requestDocuments')->name('admin.kyc.requestDocuments');
 
     // Admin Notification Centre
     Route::get('admin/notifications', 'Admin\AdminNotificationController@index')->name('admin.notifications.index');

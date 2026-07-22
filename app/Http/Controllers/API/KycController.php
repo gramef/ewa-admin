@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Mail\VendorApplicationReceived;
 use App\Models\EProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
@@ -90,6 +92,17 @@ class KycController extends Controller
             ]);
 
             Log::info("KYC documents submitted for provider #{$provider->id} by user #{$user->id}");
+
+            // Send Application Received email (SOP Template 1)
+            if ($user->email) {
+                try {
+                    $vendorName = $user->name ?? 'there';
+                    Mail::to($user->email)->send(new VendorApplicationReceived($vendorName));
+                    Log::info("Application received email sent to {$user->email}");
+                } catch (\Exception $mailErr) {
+                    Log::error("Failed to send application received email: " . $mailErr->getMessage());
+                }
+            }
 
             return $this->sendResponse([
                 'kyc_status' => 'pending',

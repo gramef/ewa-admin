@@ -32,6 +32,9 @@ class Kernel extends ConsoleKernel
 
         // Send subscription expiry notifications daily at 9 AM (A02)
         $schedule->command('ewa:subscription-notifications')->dailyAt('09:00');
+
+        // Send Day 3 check-in emails to recently approved vendors (SOP Section 6)
+        $schedule->command('ewa:vendor-check-ins')->dailyAt('10:00');
     }
 
     /**
