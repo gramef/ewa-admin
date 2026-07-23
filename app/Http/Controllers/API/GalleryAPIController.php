@@ -82,15 +82,23 @@ class GalleryAPIController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            $user = auth()->user();
-            $provider = $user ? $user->eProviders()->first() : null;
+            $user = auth('api')->user() ?? auth()->user();
+            if (!$user && $request->has('api_token')) {
+                $user = \App\Models\User::where('api_token', $request->api_token)->first();
+            }
 
-            if (!$provider) {
+            $providerId = $request->input('e_provider_id');
+            if (!$providerId && $user) {
+                $provider = $user->eProviders()->first();
+                $providerId = $provider ? $provider->id : null;
+            }
+
+            if (!$providerId) {
                 return $this->sendError('No provider profile found');
             }
 
             $input = $request->all();
-            $input['e_provider_id'] = $provider->id;
+            $input['e_provider_id'] = $providerId;
             $input['description'] = $input['description'] ?? 'Portfolio Photo';
 
             $gallery = $this->galleryRepository->create($input);
@@ -110,7 +118,7 @@ class GalleryAPIController extends Controller
      * Remove the specified Gallery item.
      * DELETE /galleries/{id}
      */
-    public function destroy($id): JsonResponse
+    public function destroy($id, Request $request): JsonResponse
     {
         try {
             $gallery = $this->galleryRepository->findWithoutFail($id);
@@ -118,16 +126,24 @@ class GalleryAPIController extends Controller
                 return $this->sendError('Gallery photo not found');
             }
 
-            $user = auth()->user();
-            $provider = $user ? $user->eProviders()->first() : null;
-
-            if (!$provider || $gallery->e_provider_id != $provider->id) {
-                return $this->sendError('Unauthorized', 403);
+            $user = auth('api')->user() ?? auth()->user();
+            if (!$user && $request->has('api_token')) {
+                $user = \App\Models\User::where('api_token', $request->api_token)->first();
             }
 
-            $this->galleryRepository->delete($id);
+            $provider = $user ? $user->eProviders()->first() : null;
 
-            return $this->sendResponse([], 'Gallery photo deleted successfully');
+            if ($provider && $gallery->e_provider_id == $provider->id) {
+                $this->galleryRepository->delete($id);
+                return $this->sendResponse([], 'Gallery photo deleted successfully');
+            }
+
+            if ($user && $user->eProviders()->where('e_providers.id', $gallery->e_provider_id)->exists()) {
+                $this->galleryRepository->delete($id);
+                return $this->sendResponse([], 'Gallery photo deleted successfully');
+            }
+
+            return $this->sendError('Unauthorized', 403);
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage());
         }
