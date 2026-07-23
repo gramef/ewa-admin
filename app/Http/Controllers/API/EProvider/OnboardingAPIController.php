@@ -177,7 +177,7 @@ class OnboardingAPIController extends Controller
                 'has_address' => $provider ? $provider->addresses()->exists() : false,
                 'has_availability' => $provider ? $provider->availabilityHours()->exists() : false,
                 'is_available' => $provider ? (bool)$provider->available : false,
-                'is_accepted' => $provider ? (bool)$provider->accepted : false,
+                'is_accepted' => $provider ? ((bool)$provider->accepted || $provider->kyc_status === 'verified') : false,
             ];
 
             // Include the provider object so the frontend can pre-fill the onboarding form

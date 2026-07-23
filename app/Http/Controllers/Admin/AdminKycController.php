@@ -103,6 +103,7 @@ class AdminKycController extends Controller
     {
         $provider = EProvider::findOrFail($id);
         $provider->update([
+            'accepted' => true,
             'kyc_status' => 'verified',
             'kyc_reviewed_at' => now(),
             'kyc_rejection_reason' => null,
