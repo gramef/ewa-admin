@@ -27,7 +27,15 @@ class WalletTopUpController extends Controller
     public function __construct()
     {
         parent::__construct();
-        Stripe::setApiKey(setting('stripe_secret', config('services.stripe.secret', env('STRIPE_SECRET'))));
+        $this->initStripe();
+    }
+
+    private function initStripe()
+    {
+        $key = setting('stripe_secret') ?: (config('services.stripe.secret') ?: env('STRIPE_SECRET'));
+        if (!empty($key)) {
+            Stripe::setApiKey($key);
+        }
     }
 
     /**
@@ -125,8 +133,11 @@ class WalletTopUpController extends Controller
 
             // Verify user owns this wallet
             $user = auth()->user();
+            if (!$user) {
+                return $this->sendError('Unauthorized. Please log in again.', 401);
+            }
             if ($user->id != $userId) {
-                return $this->sendError('Unauthorized', 403);
+                return $this->sendError('Unauthorized for this wallet', 403);
             }
 
             // Check if already processed (idempotency)
