@@ -8,10 +8,10 @@
 
 namespace App\Http\Controllers\API;
 
-
 use App\Http\Controllers\Controller;
 use App\Models\Gallery;
 use App\Repositories\GalleryRepository;
+use App\Repositories\UploadRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InfyOm\Generator\Criteria\LimitOffsetCriteria;
@@ -27,9 +27,13 @@ class GalleryAPIController extends Controller
     /** @var  GalleryRepository */
     private $galleryRepository;
 
-    public function __construct(GalleryRepository $galleryRepo)
+    /** @var UploadRepository */
+    private $uploadRepository;
+
+    public function __construct(GalleryRepository $galleryRepo, UploadRepository $uploadRepository)
     {
         $this->galleryRepository = $galleryRepo;
+        $this->uploadRepository = $uploadRepository;
         parent::__construct();
     }
 
@@ -97,18 +101,29 @@ class GalleryAPIController extends Controller
                 return $this->sendError('No provider profile found');
             }
 
-            $input = $request->all();
+            $input = $request->except(['image']);
             $input['e_provider_id'] = $providerId;
             $input['description'] = $input['description'] ?? 'Portfolio Photo';
 
             $gallery = $this->galleryRepository->create($input);
 
             if ($request->has('image') && is_array($request->image)) {
-                $gallery->image = $request->image;
-                $gallery->save();
+                foreach ($request->image as $fileUuid) {
+                    try {
+                        $cacheUpload = $this->uploadRepository->getByUuid($fileUuid);
+                        if ($cacheUpload) {
+                            $mediaItem = $cacheUpload->getMedia('image')->first();
+                            if ($mediaItem) {
+                                $mediaItem->copy($gallery, 'image');
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error("Failed to attach gallery image UUID {$fileUuid}: " . $e->getMessage());
+                    }
+                }
             }
 
-            return $this->sendResponse($gallery->toArray(), 'Gallery photo uploaded successfully');
+            return $this->sendResponse($gallery->load('media')->toArray(), 'Gallery photo uploaded successfully');
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage());
         }
