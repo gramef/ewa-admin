@@ -188,6 +188,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('wallet/withdraw', 'API\WalletWithdrawalController@requestWithdrawal');
     Route::get('wallet/transactions', 'API\WalletWithdrawalController@transactions');
 
+    // Wallet top-up via Stripe
+    Route::post('wallet/topup/create-session', 'API\WalletTopUpController@createSession');
+    Route::post('wallet/topup/verify', 'API\WalletTopUpController@verify');
+
     // Featured service payment
     Route::get('featured/price', 'API\FeaturedServiceController@getPrice');
     Route::post('featured/create-intent', 'API\FeaturedServiceController@createIntent');
