@@ -105,58 +105,9 @@
                                 <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#rejectModal{{ $p->id }}">
                                     <i class="fas fa-times"></i> Reject
                                 </button>
-                                <!-- Reject Modal -->
-                                <div class="modal fade" id="rejectModal{{ $p->id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form action="{{ route('admin.kyc.reject', $p->id) }}" method="POST">
-                                                @csrf
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Reject KYC — {{ is_array($p->name) ? ($p->name['en'] ?? '') : $p->name }}</h5>
-                                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <div class="form-group">
-                                                        <label>Rejection Reason <span class="text-danger">*</span></label>
-                                                        <textarea name="reason" class="form-control" rows="3" required placeholder="e.g. Document expired, image unclear, wrong document type..."></textarea>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                    <button type="submit" class="btn btn-danger">Reject</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Request Documents Modal -->
-                                <button type="button" class="btn btn-sm btn-info mt-1" data-toggle="modal" data-target="#docsModal{{ $p->id }}">
+                                <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#docsModal{{ $p->id }}">
                                     <i class="fas fa-envelope"></i> Request Docs
                                 </button>
-                                <div class="modal fade" id="docsModal{{ $p->id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form action="{{ route('admin.kyc.requestDocuments', $p->id) }}" method="POST">
-                                                @csrf
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Request Documents — {{ is_array($p->name) ? ($p->name['en'] ?? '') : $p->name }}</h5>
-                                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <p class="text-muted">This will send an email asking the vendor to provide right to work documents and portfolio images.</p>
-                                                    <div class="form-group">
-                                                        <label>Additional Notes (optional)</label>
-                                                        <textarea name="notes" class="form-control" rows="3" placeholder="e.g. Please provide a clearer photo of your ID..."></textarea>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                    <button type="submit" class="btn btn-info">Send Email</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
                             </td>
                         </tr>
                         @endforeach
@@ -222,5 +173,59 @@
         </div>
         @endif
     </div>
+
+    <!-- Modals rendered outside table to prevent z-index stacking & flickering -->
+    @foreach($pending as $p)
+        <!-- Reject Modal -->
+        <div class="modal fade" id="rejectModal{{ $p->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form action="{{ route('admin.kyc.reject', $p->id) }}" method="POST">
+                        @csrf
+                        <div class="modal-header">
+                            <h5 class="modal-title">Reject KYC — {{ is_array($p->name) ? ($p->name['en'] ?? '') : $p->name }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>Rejection Reason <span class="text-danger">*</span></label>
+                                <textarea name="reason" class="form-control" rows="3" required placeholder="e.g. Document expired, image unclear, wrong document type..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Reject</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Request Documents Modal -->
+        <div class="modal fade" id="docsModal{{ $p->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form action="{{ route('admin.kyc.requestDocuments', $p->id) }}" method="POST">
+                        @csrf
+                        <div class="modal-header">
+                            <h5 class="modal-title">Request Documents — {{ is_array($p->name) ? ($p->name['en'] ?? '') : $p->name }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted">This will send an email asking the vendor to provide right to work documents and portfolio images.</p>
+                            <div class="form-group">
+                                <label>Additional Notes (optional)</label>
+                                <textarea name="notes" class="form-control" rows="3" placeholder="e.g. Please provide a clearer photo of your ID..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-info">Send Email</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endforeach
 </section>
 @endsection
