@@ -1,20 +1,4 @@
 <IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteCond %{REQUEST_METHOD} OPTIONS
-    RewriteRule ^(.*)$ $1 [R=200,L]
-</IfModule>
-
-<IfModule mod_headers.c>
-    Header unset Access-Control-Allow-Origin
-    Header unset Access-Control-Allow-Methods
-    Header unset Access-Control-Allow-Headers
-
-    Header set Access-Control-Allow-Origin "*"
-    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, Accept, Origin, api_token"
-</IfModule>
-
-<IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
@@ -35,9 +19,3 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
-# DO NOT REMOVE THIS LINE AND THE LINES BELLOW SSL_REDIRECT:home-services.smartersvision.com
-# RewriteEngine on
-# RewriteCond %{HTTPS} off
-# RewriteCond %{HTTP_HOST} (www\.)?home-services.smartersvision.com
-# RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-# DO NOT REMOVE THIS LINE AND THE LINES BELLOW SSL_REDIRECT:home-services.smartersvision.com
