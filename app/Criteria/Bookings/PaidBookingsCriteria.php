@@ -31,7 +31,7 @@ class PaidBookingsCriteria implements CriteriaInterface
         return $model->where(function ($query) {
             $query->whereHas('payment', function ($q) {
                 $q->where('payment_status_id', 2);
-            })->orWhere('booking_status_id', 5);
+            })->orWhereIn('booking_status_id', [5, 6]); // Ready or Done
         })
         ->groupBy('bookings.id')
         ->select('bookings.*');
