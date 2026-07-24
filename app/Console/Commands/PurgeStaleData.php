@@ -56,6 +56,11 @@ class PurgeStaleData extends Command
             ->delete();
         $this->info("Deleted {$deletedPayouts} provider payouts older than 1 year.");
 
+        $deletedBookings = DB::table('bookings')
+            ->where('created_at', '<', $oneYearAgo)
+            ->delete();
+        $this->info("Deleted {$deletedBookings} bookings older than 1 year.");
+
         $deletedNotifs = DB::table('notifications')
             ->where('created_at', '<', $oneYearAgo)
             ->delete();
