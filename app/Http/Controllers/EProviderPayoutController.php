@@ -183,11 +183,19 @@ class EProviderPayoutController extends Controller
             return redirect(route('eProviderPayouts.index'));
         }
         $earningObj = $this->earningRepository->findByField("e_provider_id", $input['e_provider_id'])->first();
-        $totalEarnings = $earningObj ? (float)$earningObj->e_provider_earning : 0.0;
-        $totalPaidOut = (float)$this->eProviderPayoutRepository->findByField("e_provider_id", $input['e_provider_id'])->sum('amount');
-        $unpaidBalance = max(0.0, $totalEarnings - $totalPaidOut);
+        // Calculate gross provider earning from total_earning × commission rate
+        $grossProviderEarning = 0.0;
+        if ($earningObj) {
+            $eProvider = $this->eProviderRepository->findWithoutFail($input['e_provider_id']);
+            $commission = ($eProvider && $eProvider->eProviderType) ? $eProvider->eProviderType->commission : 100;
+            $grossProviderEarning = (float)$earningObj->total_earning * $commission / 100;
+        }
+        $totalPaidOut = (float) \DB::table('e_provider_payouts')
+            ->where('e_provider_id', $input['e_provider_id'])
+            ->sum('amount');
+        $unpaidBalance = max(0.0, $grossProviderEarning - $totalPaidOut);
 
-        if ($totalEarnings > 0 && $input['amount'] > $unpaidBalance) {
+        if ($grossProviderEarning > 0 && $input['amount'] > $unpaidBalance) {
             Flash::error(__('lang.amount_exceeds_earnings'));
             return redirect(route('eProviderPayouts.index'));
         }
