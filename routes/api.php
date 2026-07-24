@@ -87,6 +87,8 @@ Route::resource('booking_statuses', 'API\BookingStatusAPIController')->except([
 Route::resource('option_groups', 'API\OptionGroupAPIController');
 Route::resource('options', 'API\OptionAPIController');
 
+Route::get('taxes', 'API\TaxAPIController@index');
+
 Route::get('stories', 'API\StoryAPIController@index');
 Route::get('stories/{id}', 'API\StoryAPIController@show');
 Route::post('stories', 'API\StoryAPIController@store')->middleware('auth:api');
