@@ -74,7 +74,7 @@ class SubscriptionCompatAPIController extends Controller
 
             $package = SubscriptionPackage::findOrFail($packageId);
 
-            if ($package->is_free_trial) {
+            if ($package->is_free_trial || $package->price <= 0) {
                 if (EProviderSubscription::hasUsedTrial((int)$eProviderId, $user->id ?? null)) {
                     return $this->sendError('Free trial has already been used for this account');
                 }
@@ -103,7 +103,7 @@ class SubscriptionCompatAPIController extends Controller
                 'starts_at' => now(),
                 'expires_at' => now()->addDays($duration),
                 'active' => true,
-                'is_trial' => (bool)$package->is_free_trial,
+                'is_trial' => (bool)($package->is_free_trial || $package->price <= 0),
                 'payment_id' => $payment->id,
                 'notes' => 'Subscribed via cash - ' . $package->name,
             ]);
@@ -136,7 +136,7 @@ class SubscriptionCompatAPIController extends Controller
 
             $package = SubscriptionPackage::findOrFail($packageId);
 
-            if ($package->is_free_trial) {
+            if ($package->is_free_trial || $package->price <= 0) {
                 if (EProviderSubscription::hasUsedTrial((int)$eProviderId, $user->id ?? null)) {
                     return $this->sendError('Free trial has already been used for this account');
                 }
@@ -174,7 +174,7 @@ class SubscriptionCompatAPIController extends Controller
                 'starts_at' => now(),
                 'expires_at' => now()->addDays($duration),
                 'active' => true,
-                'is_trial' => (bool)$package->is_free_trial,
+                'is_trial' => (bool)($package->is_free_trial || $package->price <= 0),
                 'payment_id' => $payment->id,
                 'notes' => 'Subscribed via wallet - ' . $package->name,
             ]);

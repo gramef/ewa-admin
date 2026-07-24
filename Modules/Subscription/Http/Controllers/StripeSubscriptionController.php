@@ -102,9 +102,15 @@ class StripeSubscriptionController extends Controller
                 $hasUsedTrial = EProviderSubscription::hasUsedTrial($eProvider->id, $user->id);
 
                 if ($hasUsedTrial) {
-                    return $this->sendError('Free trial has already been used for this provider');
+                    if ($package->is_free_trial || $package->price <= 0) {
+                        return $this->sendError('Free trial has already been used for this provider');
+                    }
+                    // For paid plans, strip trial period if already used
+                    $trialDays = 0;
                 }
+            }
 
+            if ($trialDays > 0) {
                 $sessionParams['subscription_data'] = [
                     'trial_period_days' => $trialDays,
                     'metadata' => $sessionParams['metadata'],

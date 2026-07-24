@@ -136,8 +136,11 @@ class EProviderSubscription extends Model
         return self::whereIn('e_provider_id', $providerIds)
             ->where(function ($query) {
                 $query->where('is_trial', true)
+                    ->orWhere('notes', 'LIKE', '%trial%')
+                    ->orWhere('notes', 'LIKE', '%Trial%')
                     ->orWhereHas('subscriptionPackage', function ($q) {
-                        $q->where('is_free_trial', true);
+                        $q->where('is_free_trial', true)
+                            ->orWhere('price', '<=', 0);
                     });
             })
             ->exists();

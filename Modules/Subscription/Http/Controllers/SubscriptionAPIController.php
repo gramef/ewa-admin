@@ -120,7 +120,10 @@ class SubscriptionAPIController extends Controller
                 return $this->sendError('This subscription package is not available');
             }
 
-            if ($package->is_free_trial) {
+            if ($package->is_free_trial || $package->price <= 0) {
+                if (EProviderSubscription::hasUsedTrial($eProvider->id, $user->id)) {
+                    return $this->sendError('Free trial has already been used for this account');
+                }
                 return $this->sendError('Use the start-trial endpoint for free trial packages');
             }
 
