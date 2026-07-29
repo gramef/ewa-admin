@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Mail\VendorApplicationReceived;
 use App\Models\EProvider;
+use App\Services\GoogleDriveKycService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -13,10 +14,19 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * KYC Document Upload Controller
- * Handles vendor identity verification document uploads
+ * Handles vendor identity verification document uploads.
+ * Documents are stored in Google Drive for GDPR compliance.
+ * Falls back to local storage if Google Drive is not configured.
  */
 class KycController extends Controller
 {
+    private GoogleDriveKycService $driveService;
+
+    public function __construct(GoogleDriveKycService $driveService)
+    {
+        $this->driveService = $driveService;
+    }
+
     /**
      * Get current KYC status for the authenticated vendor's provider.
      * GET /api/kyc/status
@@ -76,9 +86,41 @@ class KycController extends Controller
         }
 
         try {
-            // Store documents securely (not publicly accessible)
-            $idPath = $request->file('id_document')->store('kyc/' . $provider->id, 'local');
-            $rtwPath = $request->file('rtw_document')->store('kyc/' . $provider->id, 'local');
+            $idPath = null;
+            $rtwPath = null;
+            $idDriveFileId = null;
+            $rtwDriveFileId = null;
+
+            // Try Google Drive first, fall back to local
+            if ($this->driveService->isConfigured()) {
+                $vendorName = $provider->name ?? 'Vendor';
+
+                $idResult = $this->driveService->uploadDocument(
+                    $request->file('id_document'),
+                    $provider->id,
+                    $vendorName,
+                    'id_document'
+                );
+                $idDriveFileId = $idResult['file_id'];
+                $idPath = 'gdrive:' . $idDriveFileId;
+
+                $rtwResult = $this->driveService->uploadDocument(
+                    $request->file('rtw_document'),
+                    $provider->id,
+                    $vendorName,
+                    'rtw_document'
+                );
+                $rtwDriveFileId = $rtwResult['file_id'];
+                $rtwPath = 'gdrive:' . $rtwDriveFileId;
+
+                Log::info("KYC documents uploaded to Google Drive for provider #{$provider->id}");
+            } else {
+                // Fallback: store locally (legacy behaviour)
+                $idPath = $request->file('id_document')->store('kyc/' . $provider->id, 'local');
+                $rtwPath = $request->file('rtw_document')->store('kyc/' . $provider->id, 'local');
+
+                Log::warning("Google Drive not configured — KYC documents stored locally for provider #{$provider->id}");
+            }
 
             // Update provider record
             $provider->update([

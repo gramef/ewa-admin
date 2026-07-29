@@ -7,6 +7,7 @@ use App\Mail\VendorApproved;
 use App\Mail\VendorDeclined;
 use App\Mail\VendorDocumentsRequired;
 use App\Models\EProvider;
+use App\Services\GoogleDriveKycService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -15,10 +16,22 @@ use Illuminate\Support\Facades\Storage;
 
 /**
  * Admin KYC Review Controller
- * Review, approve, and reject vendor KYC documents
+ * Review, approve, and reject vendor KYC documents.
+ * 
+ * GDPR Compliance:
+ * - Documents are viewed in-browser only (no download to admin PC)
+ * - All document access is audit-logged
+ * - Access restricted to users with admin.kyc.* permissions
  */
 class AdminKycController extends Controller
 {
+    private GoogleDriveKycService $driveService;
+
+    public function __construct(GoogleDriveKycService $driveService)
+    {
+        $this->driveService = $driveService;
+    }
+
     /**
      * Check if KYC columns exist in the database
      */
@@ -77,11 +90,25 @@ class AdminKycController extends Controller
     public function show($id)
     {
         $provider = EProvider::with('user')->findOrFail($id);
+
+        // Audit log: who viewed this KYC
+        Log::channel('single')->info('KYC_ACCESS', [
+            'action' => 'view_detail',
+            'provider_id' => $id,
+            'provider_name' => $provider->name,
+            'admin_id' => auth()->id(),
+            'admin_email' => auth()->user()->email ?? 'unknown',
+            'ip' => request()->ip(),
+            'timestamp' => now()->toIso8601String(),
+        ]);
+
         return view('dashboard.kyc_detail', compact('provider'));
     }
 
     /**
-     * Download/view a KYC document.
+     * View a KYC document securely (no download).
+     * For Google Drive docs: renders an embedded viewer.
+     * For local docs: streams inline to the browser.
      */
     public function document($id, $type)
     {
@@ -89,11 +116,62 @@ class AdminKycController extends Controller
         $field = $type === 'id' ? 'kyc_id_document' : 'kyc_rtw_document';
         $path = $provider->$field;
 
-        if (!$path || !Storage::disk('local')->exists($path)) {
+        if (!$path) {
             abort(404, 'Document not found');
         }
 
-        return Storage::disk('local')->download($path);
+        // Audit log: who accessed this document
+        Log::channel('single')->info('KYC_DOCUMENT_ACCESS', [
+            'action' => 'view_document',
+            'document_type' => $type,
+            'provider_id' => $id,
+            'provider_name' => $provider->name,
+            'admin_id' => auth()->id(),
+            'admin_email' => auth()->user()->email ?? 'unknown',
+            'ip' => request()->ip(),
+            'timestamp' => now()->toIso8601String(),
+        ]);
+
+        // Google Drive document
+        if (str_starts_with($path, 'gdrive:')) {
+            $fileId = str_replace('gdrive:', '', $path);
+            $viewUrl = $this->driveService->getViewUrl($fileId);
+
+            if ($viewUrl) {
+                // Return an HTML page with embedded Google Drive viewer
+                return response()->view('dashboard.kyc_document_viewer', [
+                    'viewUrl' => $viewUrl,
+                    'docType' => $type === 'id' ? 'ID Document' : 'Right to Work Document',
+                    'providerName' => $provider->name,
+                ]);
+            }
+
+            // Fallback: stream from Google Drive
+            $doc = $this->driveService->getDocumentContent($fileId);
+            if ($doc) {
+                return response($doc['content'])
+                    ->header('Content-Type', $doc['mimeType'])
+                    ->header('Content-Disposition', 'inline; filename="' . $doc['name'] . '"')
+                    ->header('X-Content-Type-Options', 'nosniff')
+                    ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+            }
+
+            abort(404, 'Document not found in Google Drive');
+        }
+
+        // Local document (legacy) — stream inline, NOT download
+        if (!Storage::disk('local')->exists($path)) {
+            abort(404, 'Document not found');
+        }
+
+        $mimeType = Storage::disk('local')->mimeType($path);
+        $content = Storage::disk('local')->get($path);
+
+        return response($content)
+            ->header('Content-Type', $mimeType)
+            ->header('Content-Disposition', 'inline; filename="kyc_' . $type . '_' . $id . '"')
+            ->header('X-Content-Type-Options', 'nosniff')
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 
     /**
@@ -110,6 +188,15 @@ class AdminKycController extends Controller
         ]);
 
         Log::info("KYC APPROVED for provider #{$id} by admin #" . auth()->id());
+
+        // Audit log
+        Log::channel('single')->info('KYC_DECISION', [
+            'action' => 'approve',
+            'provider_id' => $id,
+            'admin_id' => auth()->id(),
+            'admin_email' => auth()->user()->email ?? 'unknown',
+            'timestamp' => now()->toIso8601String(),
+        ]);
 
         // Send Welcome email (SOP Template 3 — Application Approved)
         $user = $provider->users()->first();
@@ -144,6 +231,16 @@ class AdminKycController extends Controller
 
         Log::info("KYC REJECTED for provider #{$id}: {$request->reason}");
 
+        // Audit log
+        Log::channel('single')->info('KYC_DECISION', [
+            'action' => 'reject',
+            'provider_id' => $id,
+            'reason' => $request->reason,
+            'admin_id' => auth()->id(),
+            'admin_email' => auth()->user()->email ?? 'unknown',
+            'timestamp' => now()->toIso8601String(),
+        ]);
+
         // Send Declined email (SOP Template 4 — Application Declined)
         $user = $provider->users()->first();
         if ($user && $user->email) {
@@ -177,6 +274,16 @@ class AdminKycController extends Controller
         $vendorName = $user->name ?? 'there';
         $vendorPwaUrl = config('app.vendor_pwa_url', 'https://ewa-vendor-pwa.vercel.app');
         $notes = $request->input('notes', '');
+
+        // Audit log
+        Log::channel('single')->info('KYC_DECISION', [
+            'action' => 'request_documents',
+            'provider_id' => $id,
+            'notes' => $notes,
+            'admin_id' => auth()->id(),
+            'admin_email' => auth()->user()->email ?? 'unknown',
+            'timestamp' => now()->toIso8601String(),
+        ]);
 
         try {
             Mail::to($user->email)->send(new VendorDocumentsRequired($vendorName, $vendorPwaUrl, $notes));

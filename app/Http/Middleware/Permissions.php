@@ -20,7 +20,6 @@ class Permissions
         'LaravelInstaller*',
         'LaravelUpdater*',
         'debugbar*',
-        'admin.kyc.*',
         'admin.notifications.*',
         'admin.platform-health.*',
     ];
