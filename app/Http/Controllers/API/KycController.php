@@ -70,12 +70,25 @@ class KycController extends Controller
             return $this->sendError('No provider profile found');
         }
 
-        // Validate
-        $request->validate([
+        // Determine RTW method: share_code or document
+        $rtwMethod = $request->input('rtw_method', 'document');
+
+        // Base validation
+        $rules = [
             'id_type' => 'required|in:passport,driving_licence,national_id,biometric_card',
             'id_document' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
-            'rtw_document' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
-        ]);
+            'rtw_method' => 'required|in:share_code,document',
+        ];
+
+        // Conditional RTW validation
+        if ($rtwMethod === 'share_code') {
+            $rules['rtw_share_code'] = 'required|string|size:9|alpha_num';
+            $rules['rtw_dob'] = 'required|date|before:today';
+        } else {
+            $rules['rtw_document'] = 'required|file|mimes:jpg,jpeg,png,pdf|max:10240';
+        }
+
+        $request->validate($rules);
 
         // Check if already pending or verified
         if ($provider->kyc_status === 'pending') {
@@ -88,10 +101,8 @@ class KycController extends Controller
         try {
             $idPath = null;
             $rtwPath = null;
-            $idDriveFileId = null;
-            $rtwDriveFileId = null;
 
-            // Try Google Drive first, fall back to local
+            // Upload ID document to Google Drive (or local fallback)
             if ($this->driveService->isConfigured()) {
                 $vendorName = $provider->name ?? 'Vendor';
 
@@ -101,39 +112,54 @@ class KycController extends Controller
                     $vendorName,
                     'id_document'
                 );
-                $idDriveFileId = $idResult['file_id'];
-                $idPath = 'gdrive:' . $idDriveFileId;
+                $idPath = 'gdrive:' . $idResult['file_id'];
 
-                $rtwResult = $this->driveService->uploadDocument(
-                    $request->file('rtw_document'),
-                    $provider->id,
-                    $vendorName,
-                    'rtw_document'
-                );
-                $rtwDriveFileId = $rtwResult['file_id'];
-                $rtwPath = 'gdrive:' . $rtwDriveFileId;
-
-                Log::info("KYC documents uploaded to Google Drive for provider #{$provider->id}");
+                Log::info("KYC ID document uploaded to Google Drive for provider #{$provider->id}");
             } else {
-                // Fallback: store locally (legacy behaviour)
                 $idPath = $request->file('id_document')->store('kyc/' . $provider->id, 'local');
-                $rtwPath = $request->file('rtw_document')->store('kyc/' . $provider->id, 'local');
-
-                Log::warning("Google Drive not configured — KYC documents stored locally for provider #{$provider->id}");
+                Log::warning("Google Drive not configured — KYC ID document stored locally for provider #{$provider->id}");
             }
 
-            // Update provider record
-            $provider->update([
+            // Handle RTW based on method
+            $updateData = [
                 'kyc_status' => 'pending',
                 'kyc_id_type' => $request->id_type,
                 'kyc_id_document' => $idPath,
-                'kyc_rtw_document' => $rtwPath,
+                'kyc_rtw_method' => $rtwMethod,
                 'kyc_rejection_reason' => null,
                 'kyc_submitted_at' => now(),
                 'kyc_reviewed_at' => null,
-            ]);
+            ];
 
-            Log::info("KYC documents submitted for provider #{$provider->id} by user #{$user->id}");
+            if ($rtwMethod === 'share_code') {
+                // UK GOV Share Code — no document storage needed
+                $updateData['kyc_rtw_share_code'] = strtoupper($request->rtw_share_code);
+                $updateData['kyc_rtw_dob'] = $request->rtw_dob;
+                $updateData['kyc_rtw_document'] = null;
+
+                Log::info("KYC RTW via UK Share Code for provider #{$provider->id}");
+            } else {
+                // Traditional document upload
+                if ($this->driveService->isConfigured()) {
+                    $vendorName = $provider->name ?? 'Vendor';
+                    $rtwResult = $this->driveService->uploadDocument(
+                        $request->file('rtw_document'),
+                        $provider->id,
+                        $vendorName,
+                        'rtw_document'
+                    );
+                    $rtwPath = 'gdrive:' . $rtwResult['file_id'];
+                } else {
+                    $rtwPath = $request->file('rtw_document')->store('kyc/' . $provider->id, 'local');
+                }
+                $updateData['kyc_rtw_document'] = $rtwPath;
+                $updateData['kyc_rtw_share_code'] = null;
+                $updateData['kyc_rtw_dob'] = null;
+            }
+
+            $provider->update($updateData);
+
+            Log::info("KYC submitted for provider #{$provider->id} by user #{$user->id} (RTW method: {$rtwMethod})");
 
             // Send Application Received email (SOP Template 1)
             if ($user->email) {
@@ -148,12 +174,12 @@ class KycController extends Controller
 
             return $this->sendResponse([
                 'kyc_status' => 'pending',
-                'message' => 'Documents submitted successfully. Review takes 24-48 hours.',
-            ], 'KYC documents submitted');
+                'message' => 'Submitted successfully. Review takes 24-48 hours.',
+            ], 'KYC submitted');
 
         } catch (\Exception $e) {
             Log::error('KYC submission failed: ' . $e->getMessage());
-            return $this->sendError('Failed to upload documents. Please try again.');
+            return $this->sendError('Failed to submit. Please try again.');
         }
     }
 }

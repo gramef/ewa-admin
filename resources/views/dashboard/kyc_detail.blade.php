@@ -101,7 +101,32 @@
                             <p class="text-muted">No ID document uploaded.</p>
                         @endif
 
-                        @if($provider->kyc_rtw_document)
+                        <hr>
+
+                        {{-- Right to Work Section —  Share Code or Document --}}
+                        @if(($provider->kyc_rtw_method ?? 'document') === 'share_code')
+                            <div class="mb-3">
+                                <h5><i class="fas fa-shield-alt text-success mr-1"></i> Right to Work — UK Share Code</h5>
+                                <p class="text-muted mb-2" style="font-size:0.85rem;">The vendor provided a UK GOV Share Code. Verify it on the official GOV.UK portal.</p>
+                                <table class="table table-sm table-borderless mb-3">
+                                    <tr>
+                                        <th style="width:120px;">Share Code</th>
+                                        <td><code style="font-size:1.1rem;font-weight:700;letter-spacing:2px;">{{ $provider->kyc_rtw_share_code ?? 'N/A' }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date of Birth</th>
+                                        <td>{{ $provider->kyc_rtw_dob ? \Carbon\Carbon::parse($provider->kyc_rtw_dob)->format('d M Y') : 'N/A' }}</td>
+                                    </tr>
+                                </table>
+                                <a href="https://www.gov.uk/check-immigration-status" target="_blank" rel="noopener" class="btn btn-success btn-sm">
+                                    <i class="fas fa-external-link-alt mr-1"></i> Verify on GOV.UK
+                                </a>
+                                <p class="text-muted mt-2" style="font-size:0.75rem;">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Enter the Share Code and Date of Birth on the GOV.UK portal to verify right to work status. This is a free official UK Government service.
+                                </p>
+                            </div>
+                        @elseif($provider->kyc_rtw_document)
                             <div class="mb-3">
                                 <h5>Right to Work Document</h5>
                                 <a href="{{ route('admin.kyc.document', [$provider->id, 'rtw']) }}" class="btn btn-outline-primary btn-sm" target="_blank">
@@ -109,7 +134,7 @@
                                 </a>
                             </div>
                         @else
-                            <p class="text-muted">No Right to Work document uploaded.</p>
+                            <p class="text-muted">No Right to Work verification provided.</p>
                         @endif
                     </div>
                 </div>
