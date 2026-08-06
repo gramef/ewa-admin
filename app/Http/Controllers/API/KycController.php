@@ -20,11 +20,21 @@ use Illuminate\Support\Facades\Log;
  */
 class KycController extends Controller
 {
-    private GoogleDriveKycService $driveService;
-
-    public function __construct(GoogleDriveKycService $driveService)
+    /**
+     * Get Google Drive service if available (lazy, optional).
+     * Returns null if google/apiclient is not installed or not configured.
+     */
+    private function getDriveService()
     {
-        $this->driveService = $driveService;
+        try {
+            if (class_exists(\Google_Client::class)) {
+                $service = app(\App\Services\GoogleDriveKycService::class);
+                return $service->isConfigured() ? $service : null;
+            }
+        } catch (\Exception $e) {
+            Log::debug('Google Drive KYC service not available: ' . $e->getMessage());
+        }
+        return null;
     }
 
     /**
@@ -101,12 +111,13 @@ class KycController extends Controller
         try {
             $idPath = null;
             $rtwPath = null;
+            $driveService = $this->getDriveService();
 
             // Upload ID document to Google Drive (or local fallback)
-            if ($this->driveService->isConfigured()) {
+            if ($driveService) {
                 $vendorName = $provider->name ?? 'Vendor';
 
-                $idResult = $this->driveService->uploadDocument(
+                $idResult = $driveService->uploadDocument(
                     $request->file('id_document'),
                     $provider->id,
                     $vendorName,
@@ -117,7 +128,7 @@ class KycController extends Controller
                 Log::info("KYC ID document uploaded to Google Drive for provider #{$provider->id}");
             } else {
                 $idPath = $request->file('id_document')->store('kyc/' . $provider->id, 'local');
-                Log::warning("Google Drive not configured — KYC ID document stored locally for provider #{$provider->id}");
+                Log::info("KYC ID document stored locally for provider #{$provider->id}");
             }
 
             // Handle RTW based on method
@@ -140,9 +151,9 @@ class KycController extends Controller
                 Log::info("KYC RTW via UK Share Code for provider #{$provider->id}");
             } else {
                 // Traditional document upload
-                if ($this->driveService->isConfigured()) {
+                if ($driveService) {
                     $vendorName = $provider->name ?? 'Vendor';
-                    $rtwResult = $this->driveService->uploadDocument(
+                    $rtwResult = $driveService->uploadDocument(
                         $request->file('rtw_document'),
                         $provider->id,
                         $vendorName,

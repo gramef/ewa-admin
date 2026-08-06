@@ -25,11 +25,20 @@ use Illuminate\Support\Facades\Storage;
  */
 class AdminKycController extends Controller
 {
-    private GoogleDriveKycService $driveService;
-
-    public function __construct(GoogleDriveKycService $driveService)
+    /**
+     * Get Google Drive service if available (lazy, optional).
+     */
+    private function getDriveService()
     {
-        $this->driveService = $driveService;
+        try {
+            if (class_exists(\Google_Client::class)) {
+                $service = app(\App\Services\GoogleDriveKycService::class);
+                return $service->isConfigured() ? $service : null;
+            }
+        } catch (\Exception $e) {
+            \Log::debug('Google Drive KYC service not available: ' . $e->getMessage());
+        }
+        return null;
     }
 
     /**
@@ -135,7 +144,13 @@ class AdminKycController extends Controller
         // Google Drive document
         if (str_starts_with($path, 'gdrive:')) {
             $fileId = str_replace('gdrive:', '', $path);
-            $viewUrl = $this->driveService->getViewUrl($fileId);
+            $driveService = $this->getDriveService();
+
+            if (!$driveService) {
+                abort(500, 'Google Drive service not available');
+            }
+
+            $viewUrl = $driveService->getViewUrl($fileId);
 
             if ($viewUrl) {
                 // Return an HTML page with embedded Google Drive viewer
@@ -147,7 +162,7 @@ class AdminKycController extends Controller
             }
 
             // Fallback: stream from Google Drive
-            $doc = $this->driveService->getDocumentContent($fileId);
+            $doc = $driveService->getDocumentContent($fileId);
             if ($doc) {
                 return response($doc['content'])
                     ->header('Content-Type', $doc['mimeType'])

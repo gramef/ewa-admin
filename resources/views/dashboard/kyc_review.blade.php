@@ -87,9 +87,20 @@
                                 @endif
                             </td>
                             <td>
-                                @if($p->kyc_rtw_document)
+                                @if($p->kyc_rtw_share_code || $p->kyc_rtw_method === 'share_code')
+                                    <div class="mb-1">
+                                        <span class="badge badge-success"><i class="fas fa-shield-alt mr-1"></i> UK Share Code</span>
+                                    </div>
+                                    <div><code style="font-weight:700;font-size:0.95rem;letter-spacing:1px;">{{ $p->kyc_rtw_share_code ?? 'N/A' }}</code></div>
+                                    @if($p->kyc_rtw_dob)
+                                        <small class="text-muted d-block"><i class="fas fa-birthday-cake mr-1"></i> DOB: {{ \Carbon\Carbon::parse($p->kyc_rtw_dob)->format('d M Y') }}</small>
+                                    @endif
+                                    <a href="https://www.gov.uk/check-immigration-status" target="_blank" rel="noopener" class="btn btn-xs btn-outline-success mt-1">
+                                        <i class="fas fa-external-link-alt mr-1"></i> Verify on GOV.UK
+                                    </a>
+                                @elseif($p->kyc_rtw_document)
                                     <a href="{{ route('admin.kyc.document', [$p->id, 'rtw']) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i> View
+                                        <i class="fas fa-eye"></i> View Doc
                                     </a>
                                 @else
                                     <span class="text-muted">—</span>
