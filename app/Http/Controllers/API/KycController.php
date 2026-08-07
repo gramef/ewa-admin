@@ -63,7 +63,41 @@ class KycController extends Controller
             'kyc_rejection_reason' => $provider->kyc_rejection_reason,
             'persona_inquiry_id' => $provider->persona_inquiry_id,
             'persona_status' => $provider->persona_status,
+            'kyc_rtw_share_code' => $provider->kyc_rtw_share_code,
+            'kyc_rtw_dob' => $provider->kyc_rtw_dob,
+            'kyc_rtw_method' => $provider->kyc_rtw_method,
         ], 'KYC status retrieved');
+    }
+
+    /**
+     * Save optional UK Right to Work share code & DOB.
+     * POST /api/kyc/rtw
+     */
+    public function saveRtw(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) return $this->sendError('Unauthorized', 401);
+
+        $provider = EProvider::whereHas('users', fn($q) => $q->where('users.id', $user->id))->first();
+        if (!$provider) return $this->sendError('No provider profile found');
+
+        $request->validate([
+            'rtw_share_code' => 'required|string|size:9|alpha_num',
+            'rtw_dob' => 'required|date|before:today',
+        ]);
+
+        $provider->update([
+            'kyc_rtw_share_code' => strtoupper(trim($request->rtw_share_code)),
+            'kyc_rtw_dob' => $request->rtw_dob,
+            'kyc_rtw_method' => 'share_code',
+        ]);
+
+        Log::info("Right to Work share code updated for provider #{$provider->id}");
+
+        return $this->sendResponse([
+            'kyc_rtw_share_code' => $provider->kyc_rtw_share_code,
+            'kyc_rtw_dob' => $provider->kyc_rtw_dob,
+        ], 'Right to work details saved');
     }
 
     /**

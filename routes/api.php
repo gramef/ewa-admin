@@ -207,6 +207,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('kyc/status', 'API\KycController@status');
     Route::post('kyc/submit', 'API\KycController@submit');
     Route::post('kyc/persona-start', 'API\KycController@personaStart');
+    Route::post('kyc/rtw', 'API\KycController@saveRtw');
 });
 
 /*
