@@ -15,6 +15,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Address;
 use App\Notifications\NewBooking;
 use App\Notifications\StatusChangedBooking;
+use App\Notifications\BookingCancelledNotification;
+use App\Services\CancellationService;
 use App\Repositories\AddressRepository;
 use App\Repositories\BookingRepository;
 use App\Repositories\BookingStatusRepository;
@@ -275,6 +277,52 @@ class BookingAPIController extends Controller
         }
         $input = $request->all();
         try {
+            // ── Cancellation Flow ──
+            $isCancellation = isset($input['booking_status_id'])
+                && (int)$input['booking_status_id'] === 7
+                && (int)$oldBooking->booking_status_id !== 7;
+
+            if ($isCancellation) {
+                $cancelledBy = $request->input('cancelled_by', 'customer');
+                $waiveFee = filter_var($request->input('waive_fee', false), FILTER_VALIDATE_BOOLEAN);
+
+                // Calculate cancellation fee
+                $cancellation = CancellationService::calculate($oldBooking, $cancelledBy);
+
+                // Apply fee (or waive it)
+                $input['cancellation_fee'] = $waiveFee ? 0 : $cancellation['fee_amount'];
+                $input['cancellation_reason'] = $request->input('cancellation_reason', null);
+                $input['cancelled_at'] = now();
+                $input['cancelled_by'] = $cancelledBy;
+                $input['cancellation_fee_waived'] = $waiveFee;
+                $input['cancel'] = true;
+
+                $booking = $this->bookingRepository->update($input, $id);
+
+                // Send dedicated cancellation notification to customer
+                $cancellationData = $waiveFee
+                    ? array_merge($cancellation, ['fee_amount' => 0, 'is_free' => true, 'label' => 'Fee waived'])
+                    : $cancellation;
+
+                try {
+                    Notification::send([$booking->user], new BookingCancelledNotification($booking, $cancellationData));
+                    // Also notify provider
+                    if ($booking->e_provider && $booking->e_provider->users) {
+                        Notification::send($booking->e_provider->users, new BookingCancelledNotification($booking, $cancellationData));
+                    }
+                } catch (\Exception $e) {
+                    // Don't fail the cancellation if notification fails
+                    \Log::warning('Cancellation notification failed: ' . $e->getMessage());
+                }
+
+                // Include cancellation details in the response
+                $response = $booking->toArray();
+                $response['cancellation_details'] = $cancellationData;
+
+                return $this->sendResponse($response, __('lang.saved_successfully', ['operator' => __('lang.booking')]));
+            }
+
+            // ── Normal Status Update ──
             $booking = $this->bookingRepository->update($input, $id);
             if (isset($input['booking_status_id']) && $input['booking_status_id'] != $oldBooking->booking_status_id) {
                 if ($booking->bookingStatus->order < 40) {
@@ -294,6 +342,24 @@ class BookingAPIController extends Controller
 
         // Return the booking model directly; the response helper will serialize it
         return $this->sendResponse($booking, __('lang.saved_successfully', ['operator' => __('lang.booking')]));
+    }
+
+    /**
+     * Get a cancellation fee estimate for a booking before the user confirms.
+     * GET /api/bookings/{id}/cancellation-estimate
+     */
+    public function cancellationEstimate($id, Request $request): JsonResponse
+    {
+        $booking = $this->bookingRepository->findWithoutFail($id);
+        if (empty($booking)) {
+            return $this->sendError('Booking not found');
+        }
+
+        $cancelledBy = $request->query('cancelled_by', 'customer');
+        $estimate = CancellationService::calculate($booking, $cancelledBy);
+        $estimate['policy'] = CancellationService::getPolicyDescription();
+
+        return $this->sendResponse($estimate, 'Cancellation estimate retrieved');
     }
 
 }

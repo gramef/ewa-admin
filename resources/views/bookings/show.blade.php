@@ -163,6 +163,37 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <b>{{__('lang.booking_total')}}</b> <h5 class="text-bold">{!! getPrice($booking->getTotal()) !!}</h5>
                             </li>
+                            @if($booking->cancel || $booking->booking_status_id == 7)
+                            <li class="list-group-item bg-danger text-white">
+                                <b><i class="fas fa-ban mr-1"></i> Cancellation Details</b>
+                            </li>
+                            @if($booking->cancellation_fee !== null && $booking->cancellation_fee > 0)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><b>Cancellation Fee</b></span>
+                                <h6 class="text-bold text-danger">{!! getPrice($booking->cancellation_fee) !!}</h6>
+                            </li>
+                            @else
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><b>Cancellation Fee</b></span>
+                                <span class="badge bg-success px-2 py-1">{{ $booking->cancellation_fee_waived ? 'Fee Waived' : 'Free Cancellation' }}</span>
+                            </li>
+                            @endif
+                            @if($booking->cancelled_by)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <b>Cancelled By</b> <span>{{ ucfirst($booking->cancelled_by) }}</span>
+                            </li>
+                            @endif
+                            @if($booking->cancelled_at)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <b>Cancelled At</b> <span>{{ $booking->cancelled_at->format('d M Y, H:i') }}</span>
+                            </li>
+                            @endif
+                            @if($booking->cancellation_reason)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <b>Reason</b> <span class="text-muted">{{ $booking->cancellation_reason }}</span>
+                            </li>
+                            @endif
+                            @endif
                         </ul>
                     </div>
 

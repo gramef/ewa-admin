@@ -73,7 +73,12 @@ class Booking extends Model
         'start_at',
         'ends_at',
         'hint',
-        'cancel'
+        'cancel',
+        'cancellation_fee',
+        'cancellation_reason',
+        'cancelled_at',
+        'cancelled_by',
+        'cancellation_fee_waived',
     ];
     /**
      * The attributes that should be casted to native types.
@@ -96,7 +101,12 @@ class Booking extends Model
         'start_at' => 'datetime:Y-m-d\TH:i:s.uP',
         'ends_at' => 'datetime:Y-m-d\TH:i:s.uP',
         'hint' => 'string',
-        'cancel' => 'boolean'
+        'cancel' => 'boolean',
+        'cancellation_fee' => 'double',
+        'cancellation_reason' => 'string',
+        'cancelled_at' => 'datetime',
+        'cancelled_by' => 'string',
+        'cancellation_fee_waived' => 'boolean'
     ];
     /**
      * New Attributes

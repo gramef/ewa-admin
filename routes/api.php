@@ -164,6 +164,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('notifications/count', 'API\NotificationAPIController@count');
     Route::resource('notifications', 'API\NotificationAPIController');
+    Route::get('bookings/{id}/cancellation-estimate', 'API\BookingAPIController@cancellationEstimate');
     Route::resource('bookings', 'API\BookingAPIController');
 
     // ── Chat / Messaging ──
