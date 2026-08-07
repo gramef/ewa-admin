@@ -83,4 +83,11 @@ return [
         'credentials_path' => env('GOOGLE_DRIVE_CREDENTIALS', storage_path('app/google/service-account.json')),
         'kyc_folder_id' => env('GOOGLE_DRIVE_KYC_FOLDER_ID', null),
     ],
+
+    'persona' => [
+        'api_key' => env('PERSONA_API_KEY'),
+        'template_id' => env('PERSONA_TEMPLATE_ID'),
+        'webhook_secret' => env('PERSONA_WEBHOOK_SECRET'),
+        'environment' => env('PERSONA_ENVIRONMENT', 'sandbox'),
+    ],
 ];

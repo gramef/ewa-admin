@@ -206,6 +206,7 @@ Route::middleware('auth:api')->group(function () {
     // KYC document verification
     Route::get('kyc/status', 'API\KycController@status');
     Route::post('kyc/submit', 'API\KycController@submit');
+    Route::post('kyc/persona-start', 'API\KycController@personaStart');
 });
 
 /*
@@ -215,6 +216,13 @@ Route::middleware('auth:api')->group(function () {
 */
 Route::post('paystack/webhook', [App\Http\Controllers\API\PaystackWebhookController::class, 'handleWebhook']);
 Route::get('paystack/verify/{reference}', [App\Http\Controllers\API\PaystackWebhookController::class, 'verifyPayment']);
+
+/*
+|--------------------------------------------------------------------------
+| Persona Identity Verification Webhook
+|--------------------------------------------------------------------------
+*/
+Route::post('persona/webhook', [App\Http\Controllers\API\PersonaWebhookController::class, 'handle']);
 
 /*
 |--------------------------------------------------------------------------

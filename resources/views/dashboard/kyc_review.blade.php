@@ -61,10 +61,8 @@
                     <thead>
                         <tr>
                             <th>Vendor</th>
-                            <th>ID Type</th>
                             <th>Submitted</th>
-                            <th>ID Document</th>
-                            <th>Right to Work</th>
+                            <th>Verification</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -75,33 +73,47 @@
                                 <strong>{{ is_array($p->name) ? ($p->name['en'] ?? '') : $p->name }}</strong><br>
                                 <small class="text-muted">{{ optional($p->user->first())->email ?? 'N/A' }}</small>
                             </td>
-                            <td><span class="badge badge-info">{{ ucfirst(str_replace('_', ' ', $p->kyc_id_type)) }}</span></td>
                             <td>{{ $p->kyc_submitted_at ? \Carbon\Carbon::parse($p->kyc_submitted_at)->diffForHumans() : 'N/A' }}</td>
                             <td>
-                                @if($p->kyc_id_document)
-                                    <a href="{{ route('admin.kyc.document', [$p->id, 'id']) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                @if($p->persona_inquiry_id)
+                                    {{-- Persona Verification --}}
+                                    @if($p->persona_status === 'approved' || $p->persona_status === 'completed')
+                                        <span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> ID Verified</span>
+                                    @elseif($p->persona_status === 'started')
+                                        <span class="badge badge-warning"><i class="fas fa-hourglass-half mr-1"></i> In Progress</span>
+                                    @elseif($p->persona_status === 'failed')
+                                        <span class="badge badge-danger"><i class="fas fa-times-circle mr-1"></i> Failed</span>
+                                    @else
+                                        <span class="badge badge-secondary">{{ ucfirst($p->persona_status ?? 'unknown') }}</span>
+                                    @endif
+                                    @php
+                                        $fields = json_decode($p->persona_fields, true);
+                                    @endphp
+                                    @if($fields)
+                                        <small class="d-block text-muted mt-1">
+                                            @if(!empty($fields['name_first']) && !empty($fields['name_last']))
+                                                <i class="fas fa-user mr-1"></i> {{ $fields['name_first'] }} {{ $fields['name_last'] }}
+                                            @endif
+                                        </small>
+                                    @endif
+                                @elseif($p->kyc_id_document)
+                                    {{-- Legacy manual upload --}}
+                                    <span class="badge badge-info"><i class="fas fa-id-card mr-1"></i> {{ ucfirst(str_replace('_', ' ', $p->kyc_id_type ?? 'Document')) }}</span>
+                                    <a href="{{ route('admin.kyc.document', [$p->id, 'id']) }}" target="_blank" class="btn btn-xs btn-outline-primary ml-1">
                                         <i class="fas fa-eye"></i> View
                                     </a>
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($p->kyc_rtw_share_code || $p->kyc_rtw_method === 'share_code')
-                                    <div class="mb-1">
-                                        <span class="badge badge-success"><i class="fas fa-shield-alt mr-1"></i> UK Share Code</span>
-                                    </div>
-                                    <div><code style="font-weight:700;font-size:0.95rem;letter-spacing:1px;">{{ $p->kyc_rtw_share_code ?? 'N/A' }}</code></div>
-                                    @if($p->kyc_rtw_dob)
-                                        <small class="text-muted d-block"><i class="fas fa-birthday-cake mr-1"></i> DOB: {{ \Carbon\Carbon::parse($p->kyc_rtw_dob)->format('d M Y') }}</small>
+                                    @if($p->kyc_rtw_share_code)
+                                        <div class="mt-1">
+                                            <small class="text-muted"><i class="fas fa-shield-alt mr-1"></i> Share Code: <code>{{ $p->kyc_rtw_share_code }}</code></small>
+                                            <a href="https://www.gov.uk/check-immigration-status" target="_blank" class="btn btn-xs btn-outline-success ml-1">
+                                                <i class="fas fa-external-link-alt"></i> GOV.UK
+                                            </a>
+                                        </div>
+                                    @elseif($p->kyc_rtw_document)
+                                        <a href="{{ route('admin.kyc.document', [$p->id, 'rtw']) }}" target="_blank" class="btn btn-xs btn-outline-primary ml-1 mt-1">
+                                            <i class="fas fa-eye"></i> RTW Doc
+                                        </a>
                                     @endif
-                                    <a href="https://www.gov.uk/check-immigration-status" target="_blank" rel="noopener" class="btn btn-xs btn-outline-success mt-1">
-                                        <i class="fas fa-external-link-alt mr-1"></i> Verify on GOV.UK
-                                    </a>
-                                @elseif($p->kyc_rtw_document)
-                                    <a href="{{ route('admin.kyc.document', [$p->id, 'rtw']) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i> View Doc
-                                    </a>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif

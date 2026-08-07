@@ -61,7 +61,39 @@ class KycController extends Controller
             'kyc_submitted_at' => $provider->kyc_submitted_at,
             'kyc_reviewed_at' => $provider->kyc_reviewed_at,
             'kyc_rejection_reason' => $provider->kyc_rejection_reason,
+            'persona_inquiry_id' => $provider->persona_inquiry_id,
+            'persona_status' => $provider->persona_status,
         ], 'KYC status retrieved');
+    }
+
+    /**
+     * Register a Persona inquiry ID for this vendor.
+     * Called by the vendor PWA after opening the Persona widget.
+     * POST /api/kyc/persona-start
+     */
+    public function personaStart(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) return $this->sendError('Unauthorized', 401);
+
+        $provider = EProvider::whereHas('users', fn($q) => $q->where('users.id', $user->id))->first();
+        if (!$provider) return $this->sendError('No provider profile found');
+
+        $request->validate([
+            'inquiry_id' => 'required|string|max:255',
+        ]);
+
+        $provider->update([
+            'persona_inquiry_id' => $request->inquiry_id,
+            'persona_status' => 'started',
+            'kyc_status' => $provider->kyc_status === 'not_submitted' || $provider->kyc_status === 'rejected'
+                ? 'verifying'
+                : $provider->kyc_status,
+        ]);
+
+        Log::info("Persona inquiry {$request->inquiry_id} started for provider #{$provider->id}");
+
+        return $this->sendResponse(['status' => 'registered'], 'Persona inquiry registered');
     }
 
     /**
