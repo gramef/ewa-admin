@@ -218,6 +218,11 @@ class Booking extends Model
 
     public function getTaxesValue(): float
     {
+        // UK VAT threshold: no VAT until provider exceeds £50,000 in revenue
+        if ($this->isProviderBelowVatThreshold()) {
+            return 0;
+        }
+
         $total = $this->getSubtotal();
         $taxValue = 0;
         foreach ($this->taxes as $tax) {
@@ -228,6 +233,35 @@ class Booking extends Model
             }
         }
         return $taxValue;
+    }
+
+    /**
+     * Check if the provider's total completed booking revenue is below the UK VAT threshold (£50,000).
+     */
+    public function isProviderBelowVatThreshold(): bool
+    {
+        $vatThreshold = 50000; // UK VAT registration threshold in GBP
+
+        try {
+            $providerId = $this->e_provider->id ?? null;
+            if (!$providerId) return true; // No provider = no VAT
+
+            $totalRevenue = static::where('e_provider', 'LIKE', '%"id":' . $providerId . '%')
+                ->where('booking_status_id', '>=', 5) // Completed bookings only
+                ->sum('total');
+
+            // If revenue tracking via 'total' column isn't available, try summing from payments
+            if ($totalRevenue <= 0) {
+                $totalRevenue = \App\Models\Payment::whereHas('booking', function ($q) use ($providerId) {
+                    $q->where('e_provider', 'LIKE', '%"id":' . $providerId . '%');
+                })->sum('amount');
+            }
+
+            return $totalRevenue < $vatThreshold;
+        } catch (\Exception $e) {
+            // If revenue check fails, default to no VAT (safe for small vendors)
+            return true;
+        }
     }
 
     public function getCouponValue(): float
