@@ -230,8 +230,12 @@ class BookingAPIController extends Controller
                 $input['options'] = $this->optionRepository->findWhereIn('id', $input['options']);
             }
             $input['booking_status_id'] = $this->bookingStatusRepository->find(1)->id;
-            if (isset($input['coupon_id'])) {
+            if (isset($input['coupon_id']) && !empty($input['coupon_id'])) {
                 $input['coupon'] = $this->couponRepository->find($input['coupon_id']);
+            } elseif (isset($input['coupon_code']) && !empty($input['coupon_code'])) {
+                $input['coupon'] = $this->couponRepository->firstWhere(['code' => $input['coupon_code']]);
+            } elseif (isset($input['coupon']) && is_array($input['coupon']) && isset($input['coupon']['id'])) {
+                $input['coupon'] = $this->couponRepository->find($input['coupon']['id']);
             }
             $booking = $this->bookingRepository->create($input);
             try {

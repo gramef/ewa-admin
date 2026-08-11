@@ -50,16 +50,20 @@ class ValidCriteria implements CriteriaInterface
 
         $hasFilters = !empty($eServiceId) || !empty($eProviderId) || !empty($categoriesId);
 
-        // Case-insensitive code matching, enabled check, and expiration check
-        $model = $model->where(function ($q) use ($code) {
-            $q->where('code', $code)
-              ->orWhereRaw('LOWER(code) = ?', [strtolower($code)]);
-        })
-        ->where('enabled', '1')
-        ->where(function ($q) {
-            $q->whereNull('expires_at')
-              ->orWhere('expires_at', '>', Carbon::now());
-        });
+        // Case-insensitive code matching (only if code parameter is provided)
+        if (!empty($code)) {
+            $model = $model->where(function ($q) use ($code) {
+                $q->where('code', $code)
+                  ->orWhereRaw('LOWER(code) = ?', [strtolower($code)]);
+            });
+        }
+
+        // Enabled check and expiration check
+        $model = $model->where('enabled', '1')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', Carbon::now());
+            });
 
         if ($hasFilters) {
             // A coupon is valid IF:

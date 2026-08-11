@@ -41,20 +41,21 @@ class CouponAPIController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $this->validate($request, [
-                'code' => 'required',
-            ]);
             $this->couponRepository->pushCriteria(new ValidCriteria($request));
+
+            if ($request->has('code') && !empty($request->get('code'))) {
+                $coupon = $this->couponRepository->first();
+                if (empty($coupon)) {
+                    return $this->sendError('Invalid, expired, or non-applicable coupon code', 404);
+                }
+                return $this->sendResponse($coupon, 'Coupon retrieved successfully');
+            }
+
+            $coupons = $this->couponRepository->all();
+            return $this->sendResponse($coupons, 'Coupons retrieved successfully');
         } catch (Exception $e) {
             return $this->sendError($e->getMessage());
         }
-        $coupon = $this->couponRepository->first();
-
-        if (empty($coupon)) {
-            return $this->sendError('Invalid, expired, or non-applicable coupon code', 404);
-        }
-
-        return $this->sendResponse($coupon, 'Coupon retrieved successfully');
     }
 
     /**
