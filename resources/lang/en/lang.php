@@ -1072,7 +1072,7 @@ return [
     'e_provider_type_name_help' => 'Insert Name',
     'e_provider_type_name_placeholder' => 'Insert Name',
     'e_provider_type_commission' => 'Commission',
-    'e_provider_type_commission_help' => 'Insert Commission',
+    'e_provider_type_commission_help' => 'Percentage of booking revenue paid to the provider (set to 100% for 0% platform commission on bookings; EWA revenue is subscription-based)',
     'e_provider_type_commission_placeholder' => 'Insert Commission',
     'e_provider_type_disabled' => 'Disabled',
     'e_provider_type_disabled_help' => 'Insert Disabled',
