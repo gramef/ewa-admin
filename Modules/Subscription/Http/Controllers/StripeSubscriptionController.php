@@ -25,7 +25,7 @@ use Stripe\PaymentMethod;
  * Handles Stripe Checkout Sessions for subscription trials and payments.
  *
  * Flow:
- * 1. Vendor clicks "Start 30-Day Free Trial" on Starter plan
+ * 1. Vendor clicks "Start 60-Day Free Trial" on a paid plan
  * 2. Frontend calls POST /api/provider/subscription/create-checkout-session
  * 3. Backend creates a Stripe Checkout Session with trial_period_days
  * 4. Frontend redirects vendor to Stripe Checkout URL
