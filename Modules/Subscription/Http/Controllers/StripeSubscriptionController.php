@@ -17,6 +17,9 @@ use Stripe\Customer;
 use Stripe\Price;
 use Stripe\Product;
 use Stripe\Subscription;
+use Stripe\SetupIntent;
+use Stripe\EphemeralKey;
+use Stripe\PaymentMethod;
 
 /**
  * Handles Stripe Checkout Sessions for subscription trials and payments.
@@ -202,6 +205,182 @@ class StripeSubscriptionController extends Controller
         } catch (Exception $e) {
             Log::error('Stripe checkout verification failed: ' . $e->getMessage());
             return $this->sendError('Failed to verify checkout: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Initialize a Stripe Payment Sheet for mobile subscription checkout.
+     * Generates a SetupIntent (card-on-file for trial/recurring) and EphemeralKey.
+     * POST /api/provider/subscription/init-payment-sheet
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function initPaymentSheet(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'subscription_package_id' => 'required|exists:subscription_packages,id',
+            ]);
+
+            $user = auth()->user();
+            $eProvider = $this->getProviderForUser($user);
+
+            if (!$eProvider) {
+                return $this->sendError('No provider profile found for this user');
+            }
+
+            $package = SubscriptionPackage::findOrFail($request->subscription_package_id);
+
+            if (!$package->enabled) {
+                return $this->sendError('This subscription package is not available');
+            }
+
+            // Get or create Stripe Customer
+            $stripeCustomer = $this->getOrCreateStripeCustomer($user, $eProvider);
+
+            // Ephemeral key for mobile Stripe SDK
+            $ephemeralKey = EphemeralKey::create(
+                ['customer' => $stripeCustomer->id],
+                ['stripe_version' => '2020-08-27']
+            );
+
+            // Create SetupIntent for future recurring billing (card-on-file)
+            $setupIntent = SetupIntent::create([
+                'customer' => $stripeCustomer->id,
+                'payment_method_types' => ['card'],
+                'usage' => 'off_session',
+                'metadata' => [
+                    'e_provider_id' => $eProvider->id,
+                    'user_id' => $user->id,
+                    'subscription_package_id' => $package->id,
+                    'package_name' => $package->name,
+                ],
+            ]);
+
+            $publishableKey = setting('stripe_key', config('services.stripe.key', env('STRIPE_KEY')));
+
+            return $this->sendResponse([
+                'setup_intent_client_secret' => $setupIntent->client_secret,
+                'setup_intent_id' => $setupIntent->id,
+                'customer_id' => $stripeCustomer->id,
+                'ephemeral_key' => $ephemeralKey->secret,
+                'publishable_key' => $publishableKey,
+                'package' => $package->toArray(),
+            ], 'Payment sheet initialized successfully');
+        } catch (Exception $e) {
+            Log::error('Stripe Payment Sheet initialization failed: ' . $e->getMessage());
+            return $this->sendError('Failed to initialize payment sheet: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Confirm mobile Payment Sheet completion and activate the subscription.
+     * POST /api/provider/subscription/confirm-payment-sheet
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function confirmPaymentSheet(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'subscription_package_id' => 'required|exists:subscription_packages,id',
+                'setup_intent_id' => 'nullable|string',
+            ]);
+
+            $user = auth()->user();
+            $eProvider = $this->getProviderForUser($user);
+
+            if (!$eProvider) {
+                return $this->sendError('No provider profile found for this user');
+            }
+
+            $package = SubscriptionPackage::findOrFail($request->subscription_package_id);
+            $stripeCustomer = $this->getOrCreateStripeCustomer($user, $eProvider);
+            $stripePriceId = $this->getOrCreateStripePrice($package);
+
+            // If a SetupIntent ID was provided, attach payment method as default
+            $paymentMethodId = null;
+            if ($request->setup_intent_id) {
+                try {
+                    $setupIntent = SetupIntent::retrieve($request->setup_intent_id);
+                    if ($setupIntent && $setupIntent->payment_method) {
+                        $paymentMethodId = $setupIntent->payment_method;
+                        Customer::update($stripeCustomer->id, [
+                            'invoice_settings' => [
+                                'default_payment_method' => $paymentMethodId,
+                            ],
+                        ]);
+                    }
+                } catch (Exception $e) {
+                    Log::warning('Could not retrieve or attach setup_intent payment method: ' . $e->getMessage());
+                }
+            }
+
+            // Determine trial eligibility (2 months / 60 days default)
+            $hasUsedTrial = EProviderSubscription::hasUsedTrial($eProvider->id, $user->id);
+            $isTrial = !$hasUsedTrial;
+            $trialDays = $isTrial ? ($package->trial_duration_in_days ?: 60) : 0;
+
+            // Create Stripe Subscription
+            $subParams = [
+                'customer' => $stripeCustomer->id,
+                'items' => [['price' => $stripePriceId]],
+                'metadata' => [
+                    'e_provider_id' => $eProvider->id,
+                    'user_id' => $user->id,
+                    'subscription_package_id' => $package->id,
+                    'package_name' => $package->name,
+                ],
+            ];
+
+            if ($paymentMethodId) {
+                $subParams['default_payment_method'] = $paymentMethodId;
+            }
+
+            if ($trialDays > 0) {
+                $subParams['trial_period_days'] = $trialDays;
+            }
+
+            $stripeSubId = null;
+            try {
+                $stripeSubscription = Subscription::create($subParams);
+                $stripeSubId = $stripeSubscription->id;
+            } catch (Exception $e) {
+                Log::warning('Stripe recurring subscription create warning: ' . $e->getMessage());
+            }
+
+            // Deactivate any existing active subscriptions
+            EProviderSubscription::where('e_provider_id', $eProvider->id)
+                ->where('active', true)
+                ->update(['active' => false]);
+
+            $durationDays = $isTrial ? $trialDays : $package->duration_in_days;
+
+            // Create local subscription record
+            $localSub = EProviderSubscription::create([
+                'e_provider_id' => $eProvider->id,
+                'subscription_package_id' => $package->id,
+                'starts_at' => now(),
+                'expires_at' => now()->addDays($durationDays),
+                'active' => true,
+                'is_trial' => $isTrial,
+                'stripe_subscription_id' => $stripeSubId,
+                'stripe_customer_id' => $stripeCustomer->id,
+                'notes' => $isTrial
+                    ? "2-month free trial started via Stripe - {$package->name}"
+                    : "Subscribed via Stripe - {$package->name}",
+            ]);
+
+            $localSub->load('subscriptionPackage');
+
+            Log::info("Native Payment Sheet subscription activated for provider #{$eProvider->id}: " . ($isTrial ? 'Trial' : 'Paid'));
+
+            return $this->sendResponse($localSub->toArray(), 'Subscription activated successfully');
+        } catch (Exception $e) {
+            Log::error('Stripe Payment Sheet confirmation failed: ' . $e->getMessage());
+            return $this->sendError('Failed to confirm subscription: ' . $e->getMessage());
         }
     }
 

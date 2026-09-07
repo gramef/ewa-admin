@@ -62,7 +62,15 @@
                             </tr>
                             <tr>
                                 <th>ID Type</th>
-                                <td>{{ $provider->kyc_id_type ?? 'N/A' }}</td>
+                                <td>
+                                    @if($provider->persona_inquiry_id || $provider->persona_status)
+                                        <span class="badge badge-info"><i class="fas fa-shield-alt mr-1"></i> Persona (Gov ID + Selfie)</span>
+                                    @elseif($provider->kyc_id_type)
+                                        {{ ucfirst(str_replace('_', ' ', $provider->kyc_id_type)) }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
                                 <th>Submitted</th>
@@ -87,10 +95,48 @@
             <div class="col-md-6">
                 <div class="card shadow-sm">
                     <div class="card-header bg-gradient-dark">
-                        <h3 class="card-title">KYC Documents</h3>
+                        <h3 class="card-title">KYC Documents & Verification</h3>
                     </div>
                     <div class="card-body">
-                        @if($provider->kyc_id_document)
+                        @if($provider->persona_inquiry_id || $provider->persona_status)
+                            <div class="mb-3">
+                                <h5><i class="fas fa-shield-alt text-info mr-1"></i> Persona Verification Details</h5>
+                                <table class="table table-sm table-borderless mb-2">
+                                    <tr>
+                                        <th style="width:130px;">Inquiry ID</th>
+                                        <td><code>{{ $provider->persona_inquiry_id ?? 'N/A' }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Persona Status</th>
+                                        <td>
+                                            <span class="badge badge-{{ ($provider->persona_status === 'approved' || $provider->persona_status === 'completed') ? 'success' : ($provider->persona_status === 'failed' ? 'danger' : 'warning') }}">
+                                                {{ ucfirst($provider->persona_status ?? 'Unknown') }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    @php $fields = json_decode($provider->persona_fields, true); @endphp
+                                    @if($fields)
+                                        @if(!empty($fields['name_first']) || !empty($fields['name_last']))
+                                        <tr>
+                                            <th>Verified Name</th>
+                                            <td><strong>{{ trim(($fields['name_first'] ?? '') . ' ' . ($fields['name_last'] ?? '')) }}</strong></td>
+                                        </tr>
+                                        @endif
+                                        @if(!empty($fields['birthdate']))
+                                        <tr>
+                                            <th>Birthdate</th>
+                                            <td>{{ \Carbon\Carbon::parse($fields['birthdate'])->format('d M Y') }}</td>
+                                        </tr>
+                                        @endif
+                                    @endif
+                                </table>
+                                @if($provider->persona_inquiry_id)
+                                    <a href="https://app.withpersona.com/dashboard/inquiries/{{ $provider->persona_inquiry_id }}" target="_blank" rel="noopener" class="btn btn-outline-info btn-sm mt-1">
+                                        <i class="fas fa-external-link-alt mr-1"></i> View on Persona Dashboard
+                                    </a>
+                                @endif
+                            </div>
+                        @elseif($provider->kyc_id_document)
                             <div class="mb-3">
                                 <h5>ID Document</h5>
                                 <a href="{{ route('admin.kyc.document', [$provider->id, 'id']) }}" class="btn btn-outline-primary btn-sm" target="_blank">
@@ -98,7 +144,7 @@
                                 </a>
                             </div>
                         @else
-                            <p class="text-muted">No ID document uploaded.</p>
+                            <p class="text-muted">No ID document or Persona inquiry recorded.</p>
                         @endif
 
                         <hr>

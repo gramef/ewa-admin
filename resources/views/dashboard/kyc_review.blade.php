@@ -156,14 +156,30 @@
                 <div class="card-tools"><button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-plus"></i></button></div>
             </div>
             <div class="card-body table-responsive p-0">
-                <table class="table table-hover">
-                    <thead><tr><th>Vendor</th><th>ID Type</th><th>Verified</th></tr></thead>
+                <table class="table table-hover align-middle">
+                    <thead><tr><th>Vendor</th><th>ID Type</th><th>Verified</th><th class="text-right">Actions</th></tr></thead>
                     <tbody>
                         @foreach($verified as $v)
                         <tr>
-                            <td>{{ is_array($v->name) ? ($v->name['en'] ?? '') : $v->name }}</td>
-                            <td>{{ ucfirst(str_replace('_', ' ', $v->kyc_id_type)) }}</td>
+                            <td>
+                                <strong>{{ is_array($v->name) ? ($v->name['en'] ?? '') : $v->name }}</strong><br>
+                                <small class="text-muted">{{ optional($v->user->first())->email ?? 'N/A' }}</small>
+                            </td>
+                            <td>
+                                @if($v->persona_inquiry_id || $v->persona_status)
+                                    <span class="badge badge-info"><i class="fas fa-shield-alt mr-1"></i> Persona (Gov ID + Selfie)</span>
+                                @elseif($v->kyc_id_type)
+                                    <span class="badge badge-secondary"><i class="fas fa-id-card mr-1"></i> {{ ucfirst(str_replace('_', ' ', $v->kyc_id_type)) }}</span>
+                                @else
+                                    <span class="badge badge-light">Verified</span>
+                                @endif
+                            </td>
                             <td>{{ $v->kyc_reviewed_at ? \Carbon\Carbon::parse($v->kyc_reviewed_at)->format('d M Y') : '—' }}</td>
+                            <td class="text-right">
+                                <a href="{{ route('admin.kyc.show', $v->id) }}" class="btn btn-xs btn-outline-info">
+                                    <i class="fas fa-eye mr-1"></i> View Details
+                                </a>
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -180,14 +196,22 @@
                 <div class="card-tools"><button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-plus"></i></button></div>
             </div>
             <div class="card-body table-responsive p-0">
-                <table class="table table-hover">
-                    <thead><tr><th>Vendor</th><th>Reason</th><th>Rejected</th></tr></thead>
+                <table class="table table-hover align-middle">
+                    <thead><tr><th>Vendor</th><th>Reason</th><th>Rejected</th><th class="text-right">Actions</th></tr></thead>
                     <tbody>
                         @foreach($rejected as $r)
                         <tr>
-                            <td>{{ is_array($r->name) ? ($r->name['en'] ?? '') : $r->name }}</td>
-                            <td><small>{{ $r->kyc_rejection_reason }}</small></td>
+                            <td>
+                                <strong>{{ is_array($r->name) ? ($r->name['en'] ?? '') : $r->name }}</strong><br>
+                                <small class="text-muted">{{ optional($r->user->first())->email ?? 'N/A' }}</small>
+                            </td>
+                            <td><small class="text-danger">{{ $r->kyc_rejection_reason }}</small></td>
                             <td>{{ $r->kyc_reviewed_at ? \Carbon\Carbon::parse($r->kyc_reviewed_at)->format('d M Y') : '—' }}</td>
+                            <td class="text-right">
+                                <a href="{{ route('admin.kyc.show', $r->id) }}" class="btn btn-xs btn-outline-info">
+                                    <i class="fas fa-eye mr-1"></i> View Details
+                                </a>
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>

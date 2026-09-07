@@ -191,6 +191,12 @@ Route::middleware('auth:api')->group(function () {
     Route::post('wallet/withdraw', 'API\WalletWithdrawalController@requestWithdrawal');
     Route::get('wallet/transactions', 'API\WalletWithdrawalController@transactions');
 
+    // Vendor payout (Stripe Connect / Manual) — replaces basic withdrawal
+    Route::get("vendor/payout/status", "API\\VendorPayoutController@status");
+    Route::post("vendor/payout/withdraw", "API\\VendorPayoutController@withdraw");
+    Route::post("vendor/payout/stripe-connect/onboard", "API\\VendorPayoutController@createConnectOnboardingLink");
+    Route::get("vendor/payout/stripe-connect/check", "API\\VendorPayoutController@checkConnectStatus");
+
     // Wallet top-up via Stripe
     Route::post('wallet/topup/create-session', 'API\WalletTopUpController@createSession');
     Route::post('wallet/topup/verify', 'API\WalletTopUpController@verify');

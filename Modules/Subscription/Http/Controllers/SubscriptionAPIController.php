@@ -176,13 +176,19 @@ class SubscriptionAPIController extends Controller
                 return $this->sendError('Free trial has already been used for this provider');
             }
 
-            // Find the free trial package
-            $trialPackage = SubscriptionPackage::where('is_free_trial', true)
-                ->where('enabled', true)
-                ->first();
+            // Find the package - either specified by ID, marked as free trial, or first enabled tier
+            $packageId = $request->input('subscription_package_id') ?: $request->input('package_id');
+            if ($packageId) {
+                $trialPackage = SubscriptionPackage::where('enabled', true)->find($packageId);
+            } else {
+                $trialPackage = SubscriptionPackage::where('is_free_trial', true)
+                    ->where('enabled', true)
+                    ->first()
+                    ?: SubscriptionPackage::where('enabled', true)->orderBy('sort_order')->orderBy('price')->first();
+            }
 
             if (!$trialPackage) {
-                return $this->sendError('No free trial package is currently available');
+                return $this->sendError('No subscription package is currently available');
             }
 
             // Deactivate any existing active subscriptions
@@ -190,15 +196,17 @@ class SubscriptionAPIController extends Controller
                 ->where('active', true)
                 ->update(['active' => false]);
 
+            $trialDays = $trialPackage->trial_duration_in_days ?: ($trialPackage->is_free_trial ? $trialPackage->duration_in_days : 60);
+
             // Create the trial subscription
             $subscription = EProviderSubscription::create([
                 'e_provider_id' => $eProvider->id,
                 'subscription_package_id' => $trialPackage->id,
                 'starts_at' => now(),
-                'expires_at' => now()->addDays($trialPackage->trial_duration_in_days),
+                'expires_at' => now()->addDays($trialDays),
                 'active' => true,
                 'is_trial' => true,
-                'notes' => 'Free trial started - ' . $trialPackage->name,
+                'notes' => 'Free trial started (2 months) - ' . $trialPackage->name,
             ]);
 
             $subscription->load('subscriptionPackage');

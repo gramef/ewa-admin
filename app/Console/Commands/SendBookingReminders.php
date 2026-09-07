@@ -19,7 +19,7 @@ class SendBookingReminders extends Command
         $upcomingBookings = Booking::where('booking_at', '>=', Carbon::now())
             ->where('booking_at', '<=', Carbon::now()->addHour())
             ->whereIn('booking_status_id', [1, 2]) // Pending or Accepted
-            ->with(['user', 'e_service', 'e_provider'])
+            ->with('user') // e_service / e_provider are JSON casts on bookings, not relations
             ->get();
 
         $count = 0;

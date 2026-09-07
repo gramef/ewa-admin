@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Mail\KycSubmittedAdmin;
 use App\Mail\VendorApplicationReceived;
 use App\Models\EProvider;
+use App\Models\User;
 use App\Services\GoogleDriveKycService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -247,6 +249,25 @@ class KycController extends Controller
                 } catch (\Exception $mailErr) {
                     Log::error("Failed to send application received email: " . $mailErr->getMessage());
                 }
+            }
+
+            // Notify admin users about the new KYC submission
+            try {
+                $vendorName = $user->name ?? (is_array($provider->name) ? ($provider->name['en'] ?? 'Vendor') : ($provider->name ?? 'Vendor'));
+                $admins = User::role('admin')->get();
+                foreach ($admins as $admin) {
+                    if ($admin->email) {
+                        Mail::to($admin->email)->send(new KycSubmittedAdmin(
+                            $vendorName,
+                            $user->email ?? 'N/A',
+                            $provider->id,
+                            'document'
+                        ));
+                    }
+                }
+                Log::info("KYC admin notifications sent for provider #{$provider->id}");
+            } catch (\Exception $adminMailErr) {
+                Log::error("Failed to send KYC admin notification: " . $adminMailErr->getMessage());
             }
 
             return $this->sendResponse([

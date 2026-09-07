@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Mail\KycSubmittedAdmin;
 use App\Models\EProvider;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Persona Identity Verification Webhook Controller
@@ -41,14 +44,27 @@ class PersonaWebhookController extends Controller
 
         Log::info("Persona webhook received: {$eventType} for inquiry {$inquiryId}");
 
+        $inquiryData = $payload['data']['attributes']['payload']['data']['attributes'] ?? [];
+        $referenceId = $inquiryData['reference-id'] ?? null;
+
         // Find the provider by persona_inquiry_id
         $provider = EProvider::where('persona_inquiry_id', $inquiryId)->first();
-        if (!$provider) {
-            Log::warning("Persona webhook: no provider found for inquiry {$inquiryId}");
-            return response()->json(['received' => true]);
+
+        if (!$provider && $referenceId && $referenceId !== 'unknown') {
+            $provider = EProvider::whereHas('users', fn($q) => $q->where('users.id', $referenceId))->first();
+            if (!$provider && is_numeric($referenceId)) {
+                $provider = EProvider::find($referenceId);
+            }
+            if ($provider) {
+                $provider->update(['persona_inquiry_id' => $inquiryId]);
+                Log::info("Persona webhook: linked inquiry {$inquiryId} to provider #{$provider->id} via reference ID {$referenceId}");
+            }
         }
 
-        $inquiryData = $payload['data']['attributes']['payload']['data']['attributes'] ?? [];
+        if (!$provider) {
+            Log::warning("Persona webhook: no provider found for inquiry {$inquiryId} (reference_id: " . ($referenceId ?? 'null') . ")");
+            return response()->json(['received' => true]);
+        }
 
         switch ($eventType) {
             case 'inquiry.completed':
@@ -93,6 +109,9 @@ class PersonaWebhookController extends Controller
         ]);
 
         Log::info("Persona inquiry {$inquiryId} completed for provider #{$provider->id}");
+
+        // Notify all admin users
+        $this->notifyAdmins($provider);
     }
 
     /**
@@ -103,15 +122,22 @@ class PersonaWebhookController extends Controller
     {
         $fields = $this->extractFields($data);
 
+        $wasNotSubmitted = $provider->kyc_status === 'not_submitted';
+
         $provider->update([
             'persona_status' => 'approved',
             'persona_fields' => json_encode($fields),
             // Keep kyc_status as 'pending' — admin makes final call
-            'kyc_status' => $provider->kyc_status === 'not_submitted' ? 'pending' : $provider->kyc_status,
+            'kyc_status' => $wasNotSubmitted ? 'pending' : $provider->kyc_status,
             'kyc_submitted_at' => $provider->kyc_submitted_at ?? now(),
         ]);
 
         Log::info("Persona inquiry {$inquiryId} auto-approved for provider #{$provider->id}");
+
+        // Notify admins if this is the first time reaching pending
+        if ($wasNotSubmitted) {
+            $this->notifyAdmins($provider);
+        }
     }
 
     /**
@@ -141,6 +167,34 @@ class PersonaWebhookController extends Controller
         ]);
 
         Log::info("Persona inquiry {$inquiryId} expired for provider #{$provider->id}");
+    }
+
+    /**
+     * Notify all admin users about a new KYC submission.
+     */
+    private function notifyAdmins(EProvider $provider)
+    {
+        try {
+            $vendorUser = $provider->users()->first();
+            $vendorName = $vendorUser->name ?? (is_array($provider->name) ? ($provider->name['en'] ?? 'Vendor') : ($provider->name ?? 'Vendor'));
+            $vendorEmail = $vendorUser->email ?? 'N/A';
+
+            $admins = User::role('admin')->get();
+            foreach ($admins as $admin) {
+                if ($admin->email) {
+                    Mail::to($admin->email)->send(new KycSubmittedAdmin(
+                        $vendorName,
+                        $vendorEmail,
+                        $provider->id,
+                        'persona'
+                    ));
+                }
+            }
+
+            Log::info("KYC admin notifications sent for provider #{$provider->id} to " . $admins->count() . " admin(s)");
+        } catch (\Exception $e) {
+            Log::error("Failed to send KYC admin notification: " . $e->getMessage());
+        }
     }
 
     /**
