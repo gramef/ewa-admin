@@ -135,7 +135,9 @@ class EProvider extends Model implements HasMedia, Castable
         'rate',
         'available',
         'total_reviews',
-        'has_valid_subscription'
+        'has_valid_subscription',
+        'tier_badge',
+        'subscription_package_name'
     ];
 
     protected $hidden = [
@@ -291,6 +293,31 @@ class EProvider extends Model implements HasMedia, Castable
             ->where('active', '=', 1)
             ->count();
         return $result > 0;
+    }
+
+    public function getSubscriptionPackageNameAttribute(): ?string
+    {
+        if (!Module::isActivated('Subscription')) {
+            return null;
+        }
+        $sub = $this->eProviderSubscriptions
+            ->where('expires_at', '>', now())
+            ->where('starts_at', '<=', now())
+            ->where('active', 1)
+            ->first();
+        return $sub && $sub->subscriptionPackage ? $sub->subscriptionPackage->name : null;
+    }
+
+    public function getTierBadgeAttribute(): ?string
+    {
+        $pkgName = strtolower($this->subscription_package_name ?? '');
+        if (strpos($pkgName, 'elite') !== false || strpos($pkgName, 'enterprise') !== false) {
+            return 'elite';
+        }
+        if (strpos($pkgName, 'professional') !== false || strpos($pkgName, 'pro') !== false) {
+            return 'pro';
+        }
+        return null;
     }
 
     public function getTotalReviewsAttribute(): float

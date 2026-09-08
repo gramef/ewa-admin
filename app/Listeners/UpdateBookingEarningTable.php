@@ -78,12 +78,33 @@ class UpdateBookingEarningTable
                 ->where('e_provider_id', $event->eProvider->id)
                 ->where('paid', 1)
                 ->sum('amount');
-            $grossProviderEarning = ($total - $tax) * $event->eProvider->eProviderType->commission / 100;
+
+            // Determine commission percentage (0% platform commission under subscription model)
+            $platformCommissionPercent = 0.0;
+            if (class_exists('\Nwidart\Modules\Facades\Module') && \Nwidart\Modules\Facades\Module::isActivated('Subscription')) {
+                $activeSub = \Modules\Subscription\Models\EProviderSubscription::where('e_provider_id', $event->eProvider->id)
+                    ->valid()
+                    ->with('subscriptionPackage')
+                    ->first();
+
+                if ($activeSub && $activeSub->subscriptionPackage) {
+                    $platformCommissionPercent = (float) ($activeSub->subscriptionPackage->commission_percentage ?? 0.0);
+                }
+            } else if (!empty($event->eProvider->eProviderType)) {
+                // Fallback: If eProviderType has commission defined (e.g. 100 = 100% to provider, 0% to platform)
+                $providerShare = (float) $event->eProvider->eProviderType->commission;
+                $platformCommissionPercent = max(0.0, 100.0 - $providerShare);
+            }
+
+            $netBookingTotal = max(0.0, $total - $tax);
+            $adminEarning = $netBookingTotal * ($platformCommissionPercent / 100.0);
+            $grossProviderEarning = $netBookingTotal - $adminEarning;
+
             $this->earningRepository->updateOrCreate(['e_provider_id' => $event->eProvider->id], [
                     'total_bookings' => $bookingsCount,
-                    'total_earning' => $total - $tax,
+                    'total_earning' => $netBookingTotal,
                     'taxes' => $tax,
-                    'admin_earning' => ($total - $tax) * (100 - $event->eProvider->eProviderType->commission) / 100,
+                    'admin_earning' => $adminEarning,
                     'e_provider_earning' => $grossProviderEarning - $payout,
                     'payout' => $payout,
                 ]

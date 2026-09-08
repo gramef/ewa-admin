@@ -101,6 +101,31 @@ class GalleryAPIController extends Controller
                 return $this->sendError('No provider profile found');
             }
 
+            // Enforce portfolio image limit according to subscription tier
+            if (class_exists('\Nwidart\Modules\Facades\Module') && \Nwidart\Modules\Facades\Module::isActivated('Subscription')) {
+                $activeSub = \Modules\Subscription\Models\EProviderSubscription::where('e_provider_id', $providerId)
+                    ->valid()
+                    ->with('subscriptionPackage')
+                    ->first();
+
+                $pkgName = strtolower($activeSub && $activeSub->subscriptionPackage ? $activeSub->subscriptionPackage->name : '');
+                // Elite = unlimited (-1), Professional = 20, Essential / Free Trial = 5
+                $maxImages = 5;
+                if (strpos($pkgName, 'elite') !== false || strpos($pkgName, 'enterprise') !== false) {
+                    $maxImages = -1;
+                } else if (strpos($pkgName, 'professional') !== false || strpos($pkgName, 'pro') !== false) {
+                    $maxImages = 20;
+                }
+
+                if ($maxImages !== -1) {
+                    $currentImageCount = $this->galleryRepository->findWhere(['e_provider_id' => $providerId])->count();
+                    if ($currentImageCount >= $maxImages) {
+                        $tierName = $activeSub && $activeSub->subscriptionPackage ? $activeSub->subscriptionPackage->name : 'current';
+                        return $this->sendError("You have reached your portfolio limit of {$maxImages} images for the {$tierName} tier. Please upgrade your subscription plan to upload more images.");
+                    }
+                }
+            }
+
             $input = $request->except(['image']);
             $input['e_provider_id'] = $providerId;
             $input['description'] = $input['description'] ?? 'Portfolio Photo';

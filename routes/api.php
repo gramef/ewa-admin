@@ -201,10 +201,11 @@ Route::middleware('auth:api')->group(function () {
     Route::post('wallet/topup/create-session', 'API\WalletTopUpController@createSession');
     Route::post('wallet/topup/verify', 'API\WalletTopUpController@verify');
 
-    // Featured service payment
+    // Featured service payment & Elite tier boost
     Route::get('featured/price', 'API\FeaturedServiceController@getPrice');
     Route::post('featured/create-intent', 'API\FeaturedServiceController@createIntent');
     Route::post('featured/confirm', 'API\FeaturedServiceController@confirm');
+    Route::post('featured/activate-tier-boost', 'API\FeaturedServiceController@activateTierBoost');
 
     Route::post('providers/location/', 'API\EProviderLocationAPIController@updateLocation');
 
