@@ -56,7 +56,20 @@ class EProviderObserver
             // Check if provider already has any subscription (trial or paid)
             $existingSub = EProviderSubscription::where('e_provider_id', $eProvider->id)->first();
             if ($existingSub) {
-                Log::info("EProviderObserver: Provider #{$eProvider->id} already has a subscription, skipping auto-trial.");
+                if ($existingSub->active) {
+                    Log::info("EProviderObserver: Provider #{$eProvider->id} already has an active subscription, skipping auto-trial.");
+                    return;
+                }
+                $pkg = SubscriptionPackage::find($existingSub->subscription_package_id);
+                $duration = ($pkg && $pkg->trial_duration_in_days > 0) ? $pkg->trial_duration_in_days : 30;
+                $existingSub->update([
+                    'starts_at' => now(),
+                    'expires_at' => now()->addDays($duration),
+                    'active' => true,
+                    'is_trial' => true,
+                    'notes' => 'Auto-started on approval — ' . ($pkg ? $pkg->name : 'Selected Plan'),
+                ]);
+                Log::info("EProviderObserver: Activated onboarding selected plan for provider #{$eProvider->id}, package #{$existingSub->subscription_package_id}");
                 return;
             }
 

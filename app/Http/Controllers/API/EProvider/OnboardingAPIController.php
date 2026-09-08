@@ -142,7 +142,7 @@ class OnboardingAPIController extends Controller
     }
 
     /**
-     * Step 4: Complete onboarding
+     * Complete onboarding and persist subscription package preference
      */
     public function complete(Request $request): JsonResponse
     {
@@ -155,6 +155,26 @@ class OnboardingAPIController extends Controller
             }
 
             $provider->update(['available' => true]);
+
+            // If a subscription tier was selected during onboarding, save it
+            if ($request->has('subscription_package_id')) {
+                $packageId = $request->input('subscription_package_id');
+                $package = \Modules\Subscription\Models\SubscriptionPackage::find($packageId);
+                if ($package) {
+                    $duration = ($package->trial_duration_in_days > 0) ? $package->trial_duration_in_days : 30;
+                    \Modules\Subscription\Models\EProviderSubscription::updateOrCreate(
+                        ['e_provider_id' => $provider->id],
+                        [
+                            'subscription_package_id' => $package->id,
+                            'starts_at' => now(),
+                            'expires_at' => now()->addDays($duration),
+                            'active' => false, // Will become active when KYC/approval is granted
+                            'is_trial' => true,
+                            'notes' => 'Selected during onboarding — ' . $package->name,
+                        ]
+                    );
+                }
+            }
 
             return $this->sendResponse($provider->toArray(), 'Onboarding complete!');
         } catch (\Exception $e) {
@@ -183,6 +203,10 @@ class OnboardingAPIController extends Controller
             // Include the provider object so the frontend can pre-fill the onboarding form
             if ($provider) {
                 $status['provider'] = $provider->load(['addresses', 'availabilityHours', 'eProviderType'])->toArray();
+                $sub = \Modules\Subscription\Models\EProviderSubscription::where('e_provider_id', $provider->id)->first();
+                if ($sub) {
+                    $status['subscription'] = $sub->load('package')->toArray();
+                }
             }
 
             return $this->sendResponse($status, 'Onboarding status retrieved');
