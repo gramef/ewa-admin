@@ -94,6 +94,34 @@ class EProviderAPIController extends Controller
         return $this->sendResponse($array, 'EProvider retrieved successfully');
     }
 
+    /**
+     * Display reviews for a specific EProvider.
+     * GET /e_providers/{id}/reviews
+     *
+     * @param int $id
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function reviews(int $id, Request $request): JsonResponse
+    {
+        try {
+            $eProvider = $this->eProviderRepository->findWithoutFail($id);
+            if (empty($eProvider)) {
+                return $this->sendError('EProvider not found');
+            }
+            $limit = (int) $request->input('limit', 10);
+            $reviews = $eProvider->eProviderReviews()
+                ->with(['user.media', 'eService'])
+                ->orderBy('e_service_reviews.created_at', 'desc')
+                ->limit($limit)
+                ->get();
+
+            return $this->sendResponse($reviews->toArray(), 'EProvider reviews retrieved successfully');
+        } catch (Exception $e) {
+            return $this->sendError($e->getMessage());
+        }
+    }
+
     private function orderAvailabilityHours($eProvider)
     {
         $array = $eProvider->toArray();

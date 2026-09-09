@@ -138,7 +138,10 @@ class EProvider extends Model implements HasMedia, Castable
         'has_valid_subscription',
         'tier_badge',
         'subscription_package_name',
-        'completed_bookings_count'
+        'completed_bookings_count',
+        'member_since',
+        'is_verified',
+        'verified'
     ];
 
     protected $hidden = [
@@ -452,5 +455,32 @@ class EProvider extends Model implements HasMedia, Castable
         } catch (\Exception $e) {
             return 0;
         }
+    }
+
+    /**
+     * Year provider registered on the platform
+     */
+    public function getMemberSinceAttribute(): string
+    {
+        try {
+            if (!empty($this->attributes['created_at'])) {
+                return Carbon::parse($this->attributes['created_at'])->format('Y');
+            }
+        } catch (\Exception $e) {
+        }
+        return date('Y');
+    }
+
+    /**
+     * Check if provider is verified (KYC approved or admin accepted)
+     */
+    public function getIsVerifiedAttribute(): bool
+    {
+        return ($this->attributes['kyc_status'] ?? '') === 'approved' || (bool)($this->attributes['accepted'] ?? false);
+    }
+
+    public function getVerifiedAttribute(): bool
+    {
+        return $this->is_verified;
     }
 }

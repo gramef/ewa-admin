@@ -61,6 +61,7 @@ Route::get('translations', 'API\TranslationAPIController@translations');
 Route::get('supported_locales', 'API\TranslationAPIController@supportedLocales');
 Route::get('modules', 'API\ModuleAPIController@index');
 
+Route::get('e_providers/{id}/reviews', 'API\EProviderAPIController@reviews');
 Route::resource('e_providers', 'API\EProviderAPIController')->only(['index', 'show']);
 Route::resource('availability_hours', 'API\AvailabilityHourAPIController')->only(['index', 'show']);
 Route::resource('awards', 'API\AwardAPIController')->only(['index', 'show']);
