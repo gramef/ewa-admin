@@ -264,19 +264,29 @@ class UserAPIController extends Controller
     {
         try {
             $userId = auth()->id();
+            $user = auth()->user();
+
+            // Send deletion confirmation email before deleting the account
+            if ($user && $user->email) {
+                try {
+                    $user->notify(new \App\Notifications\AccountDeletedNotification($user));
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to send account deletion notification: ' . $e->getMessage());
+                }
+            }
 
             // Clean up related data
             try {
                 \App\Models\Favorite::where('user_id', $userId)->delete();
                 \App\Models\Address::where('user_id', $userId)->delete();
                 \App\Models\EServiceReview::where('user_id', $userId)->delete();
-                // Soft-handle bookings — don't delete, just anonymize
+                // Soft-handle bookings — don't delete, just anonymize for accounting compliance
                 \App\Models\Booking::where('user_id', $userId)->update(['user_id' => null]);
             } catch (\Exception $e) {
                 \Log::warning('Cleanup during account deletion: ' . $e->getMessage());
             }
 
-            $user = $this->userRepository->delete($userId);
+            $deletedUser = $this->userRepository->delete($userId);
         } catch (Exception $e) {
             return $this->sendError($e->getMessage());
         }
