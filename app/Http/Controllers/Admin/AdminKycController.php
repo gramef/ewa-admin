@@ -224,6 +224,12 @@ class AdminKycController extends Controller
             } catch (\Exception $e) {
                 Log::error("Failed to send welcome email to {$user->email}: " . $e->getMessage());
             }
+            // Also send in-app + push notification
+            try {
+                $user->notify(new \App\Notifications\KycStatusNotification('approved'));
+            } catch (\Exception $e) {
+                Log::warning("KYC approved notification failed: " . $e->getMessage());
+            }
         }
 
         return redirect()->route('admin.kyc.index')
@@ -265,6 +271,12 @@ class AdminKycController extends Controller
                 Log::info("Decline email sent to {$user->email} for provider #{$id}");
             } catch (\Exception $e) {
                 Log::error("Failed to send decline email to {$user->email}: " . $e->getMessage());
+            }
+            // Also send in-app + push notification
+            try {
+                $user->notify(new \App\Notifications\KycStatusNotification('rejected', $request->reason));
+            } catch (\Exception $e) {
+                Log::warning("KYC rejected notification failed: " . $e->getMessage());
             }
         }
 

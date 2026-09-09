@@ -216,6 +216,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('kyc/submit', 'API\KycController@submit');
     Route::post('kyc/persona-start', 'API\KycController@personaStart');
     Route::post('kyc/rtw', 'API\KycController@saveRtw');
+
+    // Admin refund management
+    Route::get('admin/refund/preview', 'API\AdminRefundController@preview');
+    Route::post('admin/refund', 'API\AdminRefundController@issueRefund');
 });
 
 /*
@@ -225,6 +229,7 @@ Route::middleware('auth:api')->group(function () {
 */
 Route::post('paystack/webhook', [App\Http\Controllers\API\PaystackWebhookController::class, 'handleWebhook']);
 Route::get('paystack/verify/{reference}', [App\Http\Controllers\API\PaystackWebhookController::class, 'verifyPayment']);
+Route::post('stripe/webhook', [App\Http\Controllers\API\StripeWebhookController::class, 'handle']);
 
 /*
 |--------------------------------------------------------------------------

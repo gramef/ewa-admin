@@ -38,6 +38,8 @@ return [
 
     'stripe' => [
         'model' => App\Models\User::class,
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
     ],
 
     'facebook' => [
