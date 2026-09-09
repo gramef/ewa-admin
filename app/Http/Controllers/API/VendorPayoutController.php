@@ -171,9 +171,8 @@ class VendorPayoutController extends Controller
             return $this->sendError('Insufficient balance. Available: £' . number_format($wallet->balance, 2));
         }
 
-        // ── Payout Hold Period (7 days) ──
-        // Funds received in the last 7 days are held for chargeback protection.
-        $holdDays = (int) setting('vendor_payout_hold_days', 7);
+        // ── Payout Hold Period (configurable, default 0 for instant availability) ──
+        $holdDays = (int) setting('vendor_payout_hold_days', 0);
         if ($holdDays > 0) {
             $heldAmount = WalletTransaction::where('wallet_id', $wallet->id)
                 ->where('action', 'credit')

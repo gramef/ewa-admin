@@ -146,7 +146,7 @@ class FeaturedServiceController extends Controller
         $price = (float) setting('featured_service_price', 9.99);
         $currency = setting('default_currency_code', 'gbp');
 
-        $stripeSecret = setting('stripe_secret');
+        $stripeSecret = setting('stripe_secret') ?: config('services.stripe.secret') ?: env('STRIPE_SECRET');
         if (empty($stripeSecret)) {
             return $this->sendError('Payment system not configured', 500);
         }
@@ -207,7 +207,7 @@ class FeaturedServiceController extends Controller
             return $this->sendError('You do not own this service');
         }
 
-        $stripeSecret = setting('stripe_secret');
+        $stripeSecret = setting('stripe_secret') ?: config('services.stripe.secret') ?: env('STRIPE_SECRET');
         if (empty($stripeSecret)) {
             return $this->sendError('Payment system not configured', 500);
         }

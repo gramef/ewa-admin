@@ -160,6 +160,26 @@ class ChatAPIController extends Controller
         // Update the room's last_message_at
         $room->update(['last_message_at' => now()]);
 
+        // Dispatch notification to recipient
+        try {
+            $recipient = null;
+            if ($room->user_id === $user->id) {
+                // Sender is customer -> notify provider user(s)
+                if ($room->eProvider && $room->eProvider->users) {
+                    $recipient = $room->eProvider->users;
+                }
+            } else {
+                // Sender is provider -> notify customer
+                $recipient = $room->user;
+            }
+
+            if ($recipient) {
+                \Illuminate\Support\Facades\Notification::send($recipient, new \App\Notifications\NewMessage($user, $msg->message, (string) $msg->id));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to dispatch chat notification: ' . $e->getMessage());
+        }
+
         $msg->load('fromUser');
 
         return response()->json([

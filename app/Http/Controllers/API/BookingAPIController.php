@@ -329,13 +329,29 @@ class BookingAPIController extends Controller
             // ── Normal Status Update ──
             $booking = $this->bookingRepository->update($input, $id);
             if (isset($input['booking_status_id']) && $input['booking_status_id'] != $oldBooking->booking_status_id) {
-                if ($booking->bookingStatus->order < 40) {
+                $newStatusId = (int) $input['booking_status_id'];
+
+                if ($newStatusId === 5) {
+                    // Ready / Awaiting Client Confirmation -> notify client to validate
+                    if ($booking->user) {
+                        Notification::send([$booking->user], new StatusChangedBooking($booking));
+                    }
+                } elseif ($newStatusId === 6) {
+                    // Done -> notify both client (to review) and provider (funds released)
+                    if ($booking->user) {
+                        Notification::send([$booking->user], new StatusChangedBooking($booking));
+                    }
+                    if ($booking->e_provider && $booking->e_provider->users) {
+                        Notification::send($booking->e_provider->users, new StatusChangedBooking($booking));
+                    }
+                } elseif ($booking->bookingStatus->order < 40) {
                     Notification::send([$booking->user], new StatusChangedBooking($booking));
                 } else {
                     Notification::send($booking->e_provider->users, new StatusChangedBooking($booking));
                 }
+
                 // Recalculate provider earnings when a booking is completed (Done/Ready)
-                if (in_array((int)$input['booking_status_id'], [5, 6])) {
+                if (in_array($newStatusId, [5, 6])) {
                     event(new BookingChangedEvent($booking->e_provider));
                 }
             }
@@ -346,6 +362,48 @@ class BookingAPIController extends Controller
 
         // Return the booking model directly; the response helper will serialize it
         return $this->sendResponse($booking, __('lang.saved_successfully', ['operator' => __('lang.booking')]));
+    }
+
+    /**
+     * Client confirms job is done.
+     * POST /api/bookings/{id}/confirm-done
+     */
+    public function confirmDone($id, Request $request): JsonResponse
+    {
+        $booking = $this->bookingRepository->findWithoutFail($id);
+        if (empty($booking)) {
+            return $this->sendError('Booking not found');
+        }
+
+        $user = auth()->user();
+        $isCustomer = $user && (int)$booking->user_id === (int)$user->id;
+        $isProvider = $user && $booking->e_provider && $booking->e_provider->users->contains('id', $user->id);
+        $isAdmin = $user && method_exists($user,('hasRole')) && $user->hasRole('admin');
+
+        if (!$isCustomer && !$isProvider && !$isAdmin) {
+            return $this->sendError('Unauthorized to confirm this booking');
+        }
+
+        try {
+            $booking = $this->bookingRepository->update(['booking_status_id' => 6], $id);
+
+            // Recalculate provider earnings
+            if ($booking->e_provider) {
+                event(new BookingChangedEvent($booking->e_provider));
+            }
+
+            // Notify both parties
+            if ($booking->user) {
+                Notification::send([$booking->user], new StatusChangedBooking($booking));
+            }
+            if ($booking->e_provider && $booking->e_provider->users) {
+                Notification::send($booking->e_provider->users, new StatusChangedBooking($booking));
+            }
+
+            return $this->sendResponse($booking, 'Booking marked as completed successfully!');
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to confirm booking: ' . $e->getMessage());
+        }
     }
 
     /**

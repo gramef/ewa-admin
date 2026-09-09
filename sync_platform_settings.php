@@ -23,6 +23,7 @@ try {
         'mail_from_name'             => 'EWA Hair Platform',
         'mail_username'              => 'support@ewaofficial.co.uk',
         'app_name'                   => 'EWA Hair Platform',
+        'vendor_payout_hold_days'    => '0',
     ])->save();
 
     echo "✓ Enabled email notifications in app settings\n";

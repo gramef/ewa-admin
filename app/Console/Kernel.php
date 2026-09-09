@@ -35,6 +35,9 @@ class Kernel extends ConsoleKernel
 
         // Send Day 3 check-in emails to recently approved vendors (SOP Section 6)
         $schedule->command('ewa:vendor-check-ins')->dailyAt('10:00');
+
+        // Auto-release bookings awaiting client confirmation for >24 hours to Done
+        $schedule->command('bookings:auto-release-completed')->hourly();
     }
 
     /**

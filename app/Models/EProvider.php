@@ -137,7 +137,8 @@ class EProvider extends Model implements HasMedia, Castable
         'total_reviews',
         'has_valid_subscription',
         'tier_badge',
-        'subscription_package_name'
+        'subscription_package_name',
+        'completed_bookings_count'
     ];
 
     protected $hidden = [
@@ -427,5 +428,29 @@ class EProvider extends Model implements HasMedia, Castable
     public function getHasMediaAttribute(): bool
     {
         return $this->hasMedia('image');
+    }
+
+    /**
+     * Get the count of completed bookings (status = 6) for this provider.
+     * Visible to clients on provider profile.
+     */
+    public function getCompletedBookingsCountAttribute(): int
+    {
+        try {
+            $driver = \Illuminate\Support\Facades\DB::getDriverName();
+            if ($driver === 'mysql') {
+                return (int) \Illuminate\Support\Facades\DB::table('bookings')
+                    ->whereRaw("CAST(json_extract(e_provider, '$.id') AS UNSIGNED) = ?", [(int)$this->id])
+                    ->where('booking_status_id', 6)
+                    ->count();
+            } else {
+                return (int) \Illuminate\Support\Facades\DB::table('bookings')
+                    ->where('e_provider', 'LIKE', '%"id":' . $this->id . '%')
+                    ->where('booking_status_id', 6)
+                    ->count();
+            }
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
 }
