@@ -253,3 +253,12 @@ Route::middleware(['auth:api', 'cache.response:30'])->group(function () {
     Route::get('analytics/payments/recent-transactions', [App\Http\Controllers\API\PaymentAnalyticsController::class, 'getRecentTransactions']);
     Route::get('analytics/payments/trends', [App\Http\Controllers\API\PaymentAnalyticsController::class, 'getPaymentTrends']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Communication Logs Routes
+|--------------------------------------------------------------------------
+*/
+Route::post('communications/log', [App\Http\Controllers\API\CommunicationLogAPIController::class, 'log']);
+Route::get('communications/booking/{bookingId}', [App\Http\Controllers\API\CommunicationLogAPIController::class, 'getBookingLogs']);
+

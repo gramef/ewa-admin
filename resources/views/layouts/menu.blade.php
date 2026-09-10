@@ -40,6 +40,12 @@
         @endif
         <p>Platform Health</p></a>
 </li>
+<li class="nav-item">
+    <a class="nav-link {{ Request::is('admin/communication-logs*') ? 'active' : '' }}" href="{!! route('admin.communication-logs.index') !!}">@if($icons)
+            <i class="nav-icon fas fa-phone-alt"></i>
+        @endif
+        <p>Communication Logs</p></a>
+</li>
 @can('modules.index')
     <li class="nav-item">
         <a class="nav-link {{ Request::is('modules*') ? 'active' : '' }}" href="{!! route('modules.index') !!}">@if($icons)

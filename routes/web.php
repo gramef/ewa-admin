@@ -67,6 +67,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', 'UserController');
     Route::get('dashboard', 'DashboardController@index')->name('dashboard');
     Route::get('dashboard/payment-analytics', 'DashboardController@paymentAnalytics')->name('dashboard.payment-analytics');
+    Route::get('admin/communication-logs', [App\Http\Controllers\CommunicationLogController::class, 'index'])->name('admin.communication-logs.index');
 
     Route::group(['middleware' => ['permission:medias']], function () {
         Route::get('uploads/all/{collection?}', 'UploadController@all');

@@ -251,7 +251,11 @@ class BookingAPIController extends Controller
             } catch (ValidatorException $e) {
                 return $this->sendError($e->getMessage());
             }
-            Notification::send($eProvider->users, new NewBooking($booking));
+            try {
+                Notification::send($eProvider->users, new NewBooking($booking));
+            } catch (\Exception $e) {
+                \Log::warning('NewBooking notification failed: ' . $e->getMessage());
+            }
 
 
 
@@ -331,23 +335,27 @@ class BookingAPIController extends Controller
             if (isset($input['booking_status_id']) && $input['booking_status_id'] != $oldBooking->booking_status_id) {
                 $newStatusId = (int) $input['booking_status_id'];
 
-                if ($newStatusId === 5) {
-                    // Ready / Awaiting Client Confirmation -> notify client to validate
-                    if ($booking->user) {
+                try {
+                    if ($newStatusId === 5) {
+                        // Ready / Awaiting Client Confirmation -> notify client to validate
+                        if ($booking->user) {
+                            Notification::send([$booking->user], new StatusChangedBooking($booking));
+                        }
+                    } elseif ($newStatusId === 6) {
+                        // Done -> notify both client (to review) and provider (funds released)
+                        if ($booking->user) {
+                            Notification::send([$booking->user], new StatusChangedBooking($booking));
+                        }
+                        if ($booking->e_provider && $booking->e_provider->users) {
+                            Notification::send($booking->e_provider->users, new StatusChangedBooking($booking));
+                        }
+                    } elseif ($booking->bookingStatus->order < 40) {
                         Notification::send([$booking->user], new StatusChangedBooking($booking));
-                    }
-                } elseif ($newStatusId === 6) {
-                    // Done -> notify both client (to review) and provider (funds released)
-                    if ($booking->user) {
-                        Notification::send([$booking->user], new StatusChangedBooking($booking));
-                    }
-                    if ($booking->e_provider && $booking->e_provider->users) {
+                    } else {
                         Notification::send($booking->e_provider->users, new StatusChangedBooking($booking));
                     }
-                } elseif ($booking->bookingStatus->order < 40) {
-                    Notification::send([$booking->user], new StatusChangedBooking($booking));
-                } else {
-                    Notification::send($booking->e_provider->users, new StatusChangedBooking($booking));
+                } catch (\Exception $e) {
+                    \Log::warning('StatusChangedBooking notification failed: ' . $e->getMessage());
                 }
 
                 // Recalculate provider earnings when a booking is completed (Done/Ready)
@@ -393,11 +401,15 @@ class BookingAPIController extends Controller
             }
 
             // Notify both parties
-            if ($booking->user) {
-                Notification::send([$booking->user], new StatusChangedBooking($booking));
-            }
-            if ($booking->e_provider && $booking->e_provider->users) {
-                Notification::send($booking->e_provider->users, new StatusChangedBooking($booking));
+            try {
+                if ($booking->user) {
+                    Notification::send([$booking->user], new StatusChangedBooking($booking));
+                }
+                if ($booking->e_provider && $booking->e_provider->users) {
+                    Notification::send($booking->e_provider->users, new StatusChangedBooking($booking));
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Booking completion notification failed: ' . $e->getMessage());
             }
 
             return $this->sendResponse($booking, 'Booking marked as completed successfully!');

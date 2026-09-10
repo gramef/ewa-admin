@@ -265,6 +265,35 @@
                 </div>
             </div>
 
+            @php
+                $commLogs = \App\Models\CommunicationLog::where('booking_id', $booking->id)->latest()->take(5)->get();
+            @endphp
+            <div class="card shadow-sm">
+                <div class="card-header text-bold d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-phone-alt text-primary mr-1"></i> Communication Activity</span>
+                    <a href="{{ route('admin.communication-logs.index', ['booking_id' => $booking->id]) }}" class="btn btn-xs btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body px-0 py-1">
+                    <ul class="list-group list-group-flush">
+                        @forelse($commLogs as $clog)
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                <div>
+                                    <span class="badge {{ $clog->caller_role === 'client' ? 'badge-info' : 'badge-warning' }} mr-1">
+                                        {{ ucfirst($clog->caller_role) }} Call
+                                    </span>
+                                    <small class="text-muted d-block">{{ $clog->phone_dialed ?: 'Direct' }}</small>
+                                </div>
+                                <small class="text-muted">{{ $clog->created_at->format('M d, H:i') }}</small>
+                            </li>
+                        @empty
+                            <li class="list-group-item text-center text-muted py-3">
+                                <small><i class="fas fa-info-circle mr-1"></i> No calls logged for this booking</small>
+                            </li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+
         </div>
 
     </div>
