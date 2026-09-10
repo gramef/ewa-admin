@@ -252,7 +252,15 @@ class BookingAPIController extends Controller
                 return $this->sendError($e->getMessage());
             }
             try {
-                Notification::send($eProvider->users, new NewBooking($booking));
+                $paymentMethod = $request->input('payment_method', $input['payment_method'] ?? 'card');
+                $isCard = ($paymentMethod === 'card');
+                // Defer vendor & client notifications for card payments until Stripe payment succeeds in StripeController::payBooking
+                if (!$isCard) {
+                    Notification::send($eProvider->users, new NewBooking($booking));
+                    if ($booking->user) {
+                        Notification::send([$booking->user], new NewBooking($booking));
+                    }
+                }
             } catch (\Exception $e) {
                 \Log::warning('NewBooking notification failed: ' . $e->getMessage());
             }

@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\BookingChangedEvent;
+use App\Notifications\NewBooking;
 use App\Notifications\StatusChangedBooking;
 use App\Notifications\StatusChangedPayment;
 use Flash;
@@ -209,6 +210,17 @@ class StripeController extends ParentBookingController
                     'payment_id' => optional($booking->payment)->id,
                 ]);
                 Notification::send($booking->user, new StatusChangedPayment($booking));
+
+                // Dispatch NewBooking notification to the provider NOW that payment has succeeded
+                try {
+                    $eProvider = $booking->e_provider;
+                    if ($eProvider && $eProvider->users) {
+                        Notification::send($eProvider->users, new NewBooking($booking));
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('NewBooking provider notification failed in payBooking: ' . $e->getMessage());
+                }
+
                 return response()->json(['success' => true, 'intent' => $intentId, 'status' => 'succeeded']);
             } elseif ($intent->status === 'requires_action' || $intent->status === 'requires_confirmation') {
                 return response()->json([
