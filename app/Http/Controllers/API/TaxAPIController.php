@@ -34,7 +34,7 @@ class TaxAPIController extends Controller
                     $taxes = $taxes->map(function ($tax) {
                         $t = $tax->toArray();
                         $t['value'] = 0;
-                        $t['name'] = $this->renameToVat($t['name']);
+                        $t['name'] = $this->renameToVat($t['name'] ?? 'VAT');
                         $t['below_vat_threshold'] = true;
                         return $t;
                     });
@@ -45,12 +45,12 @@ class TaxAPIController extends Controller
             // Rename tax labels to VAT
             $taxes = $taxes->map(function ($tax) {
                 $t = $tax->toArray();
-                $t['name'] = $this->renameToVat($t['name']);
+                $t['name'] = $this->renameToVat($t['name'] ?? 'VAT');
                 return $t;
             });
 
             return $this->sendResponse($taxes->toArray(), 'Taxes retrieved successfully');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->sendError($e->getMessage(), 200);
         }
     }
@@ -74,7 +74,7 @@ class TaxAPIController extends Controller
             }
 
             return $totalRevenue < $vatThreshold;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return true;
         }
     }
@@ -82,15 +82,23 @@ class TaxAPIController extends Controller
     /**
      * Rename tax labels to VAT for UK compliance.
      */
-    private function renameToVat($name): string
+    private function renameToVat($name)
     {
+        if (is_object($name)) {
+            $name = (array) $name;
+        }
         if (is_array($name)) {
-            // Translatable field
+            // Translatable field (e.g. ['en' => 'Tax', 'fr' => 'Taxe'])
             foreach ($name as $locale => $val) {
-                $name[$locale] = preg_replace('/\btax\b/i', 'VAT', $val);
+                if (is_string($val)) {
+                    $name[$locale] = preg_replace('/\btax\b/i', 'VAT', $val);
+                }
             }
             return $name;
         }
-        return preg_replace('/\btax\b/i', 'VAT', $name ?: 'VAT');
+        if (is_string($name)) {
+            return preg_replace('/\btax\b/i', 'VAT', $name);
+        }
+        return 'VAT';
     }
 }

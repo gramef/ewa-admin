@@ -176,8 +176,10 @@ class UserAPIController extends Controller
             ]
         );
 
-        if (empty($settings['stripe_key']) && env('STRIPE_KEY')) {
-            $settings['stripe_key'] = env('STRIPE_KEY');
+        if (env('STRIPE_KEY')) {
+            $settings['stripe_key'] = trim(env('STRIPE_KEY'));
+        } elseif (!empty($settings['stripe_key'])) {
+            $settings['stripe_key'] = trim($settings['stripe_key']);
         }
         if (!$settings) {
             return $this->sendError('Settings not found', 200);
