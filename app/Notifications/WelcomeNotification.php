@@ -41,7 +41,7 @@ class WelcomeNotification extends Notification
             ->line("Welcome to {$appName}! We're excited to have you on board.")
             ->line("Whether you're here to book a professional hair styling service or manage your beauty business, we've got you covered.")
             ->action('Get Started', url('/'))
-            ->line("If you have any questions, feel free to reach out to our support team at support@ewaofficial.co.uk.")
+            ->line("If you have any questions, feel free to reach out to our support team at support@ewaofficialapp.com.")
             ->salutation("Best,\nThe {$appName} Team");
     }
 

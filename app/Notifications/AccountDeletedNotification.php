@@ -44,7 +44,7 @@ class AccountDeletedNotification extends Notification
             ->line("• Authentication credentials and active session tokens")
             ->line("### Data Retention Policy (UK GDPR & HMRC Compliance):")
             ->line("Under UK law (HMRC statutory accounting regulations), financial transaction records, invoices, and booking payment histories must be retained in an encrypted archive for **7 years** for statutory auditing and tax purposes. These records are strictly restricted and cannot be used for marketing or commercial purposes.")
-            ->line("If you did not request this deletion or have questions regarding your data, please contact our Data Protection Officer immediately at **support@ewaofficial.co.uk**.")
+            ->line("If you did not request this deletion or have questions regarding your data, please contact our Data Protection Officer immediately at **support@ewaofficialapp.com**.")
             ->salutation("Sincerely,\nThe {$appName} Team");
     }
 

@@ -56,7 +56,7 @@ class KycStatusNotification extends Notification
             ->line($this->reason ? "**Reason:** {$this->reason}" : "Please ensure your documents are clear and match the information provided.")
             ->line("You can re-submit your verification documents from the app.")
             ->action('Re-submit Verification', url('/'))
-            ->salutation("If you need help, contact support@ewaofficial.co.uk\nThe {$appName} Team");
+            ->salutation("If you need help, contact support@ewaofficialapp.com\nThe {$appName} Team");
     }
 
     public function toFcm($notifiable): FcmMessage
