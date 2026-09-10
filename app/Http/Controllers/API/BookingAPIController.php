@@ -362,6 +362,15 @@ class BookingAPIController extends Controller
                 if (in_array($newStatusId, [5, 6])) {
                     event(new BookingChangedEvent($booking->e_provider));
                 }
+
+                // Check and award referral rewards when booking is completed
+                if ($newStatusId === 6) {
+                    try {
+                        \App\Models\UserReferral::checkAndAwardQualification($booking);
+                    } catch (\Exception $e) {
+                        \Log::warning('Referral qualification check failed: ' . $e->getMessage());
+                    }
+                }
             }
 
         } catch (ValidatorException $e) {
@@ -398,6 +407,13 @@ class BookingAPIController extends Controller
             // Recalculate provider earnings
             if ($booking->e_provider) {
                 event(new BookingChangedEvent($booking->e_provider));
+            }
+
+            // Check and award referral rewards
+            try {
+                \App\Models\UserReferral::checkAndAwardQualification($booking);
+            } catch (\Exception $e) {
+                \Log::warning('Referral qualification check failed in confirmDone: ' . $e->getMessage());
             }
 
             // Notify both parties

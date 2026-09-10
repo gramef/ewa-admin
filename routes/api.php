@@ -262,3 +262,13 @@ Route::middleware(['auth:api', 'cache.response:30'])->group(function () {
 Route::post('communications/log', [App\Http\Controllers\API\CommunicationLogAPIController::class, 'log']);
 Route::get('communications/booking/{bookingId}', [App\Http\Controllers\API\CommunicationLogAPIController::class, 'getBookingLogs']);
 
+/*
+|--------------------------------------------------------------------------
+| Referral & Promotional Package Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:api')->group(function () {
+    Route::get('referrals/my-code', [App\Http\Controllers\API\ReferralAPIController::class, 'myCode']);
+    Route::post('referrals/apply', [App\Http\Controllers\API\ReferralAPIController::class, 'apply']);
+});
+

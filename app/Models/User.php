@@ -73,6 +73,7 @@ class User extends Authenticatable implements HasMedia
         'device_token',
         'stripe_connect_id',
         'stripe_connect_onboarded',
+        'referral_code',
     ];
     /**
      * The attributes that should be casted to native types.
@@ -194,4 +195,40 @@ class User extends Authenticatable implements HasMedia
         return $this->belongsToMany(EProvider::class, 'e_provider_users');
     }
 
+    public function referralsGiven()
+    {
+        return $this->hasMany(UserReferral::class, 'referrer_id');
+    }
+
+    public function referredBy()
+    {
+        return $this->hasOne(UserReferral::class, 'referee_id');
+    }
+
+    /**
+     * Get or automatically generate unique referral code for this user.
+     */
+    public function getOrCreateReferralCode(): string
+    {
+        if (!empty($this->referral_code)) {
+            return $this->referral_code;
+        }
+
+        $cleanName = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $this->name ?? 'EWA'));
+        $prefix = substr($cleanName, 0, 4) ?: 'EWA';
+        $random = strtoupper(\Illuminate\Support\Str::random(4));
+        $code = 'EWA-' . $prefix . $random;
+
+        // Ensure uniqueness
+        while (self::where('referral_code', $code)->exists()) {
+            $code = 'EWA-' . strtoupper(\Illuminate\Support\Str::random(6));
+        }
+
+        $this->referral_code = $code;
+        $this->saveQuietly();
+
+        return $code;
+    }
+
 }
+

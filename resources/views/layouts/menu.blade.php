@@ -46,6 +46,12 @@
         @endif
         <p>Communication Logs</p></a>
 </li>
+<li class="nav-item">
+    <a class="nav-link {{ Request::is('referral-packages*') ? 'active' : '' }}" href="{!! route('referralPackages.index') !!}">@if($icons)
+            <i class="nav-icon fas fa-gift"></i>
+        @endif
+        <p>Referral Packages</p></a>
+</li>
 @can('modules.index')
     <li class="nav-item">
         <a class="nav-link {{ Request::is('modules*') ? 'active' : '' }}" href="{!! route('modules.index') !!}">@if($icons)
