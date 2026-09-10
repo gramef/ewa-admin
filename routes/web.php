@@ -68,6 +68,7 @@ Route::middleware('auth')->group(function () {
     Route::get('dashboard', 'DashboardController@index')->name('dashboard');
     Route::get('dashboard/payment-analytics', 'DashboardController@paymentAnalytics')->name('dashboard.payment-analytics');
     Route::get('admin/communication-logs', [App\Http\Controllers\CommunicationLogController::class, 'index'])->name('admin.communication-logs.index');
+    Route::get('admin/communication-logs/{id}', [App\Http\Controllers\CommunicationLogController::class, 'show'])->name('admin.communication-logs.show');
     Route::post('referral-packages/{id}/toggle', [App\Http\Controllers\ReferralPackageController::class, 'toggle'])->name('referralPackages.toggle');
     Route::resource('referral-packages', App\Http\Controllers\ReferralPackageController::class)->names('referralPackages');
 

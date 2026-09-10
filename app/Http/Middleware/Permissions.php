@@ -22,6 +22,10 @@ class Permissions
         'debugbar*',
         'admin.notifications.*',
         'admin.platform-health.*',
+        'admin.communication-logs.*',
+        'admin.kyc.*',
+        'admin.push.*',
+        'referralPackages.*',
     ];
 
     private array $exceptControllers = [
@@ -43,6 +47,10 @@ class Permissions
     {
         $permission = $request->route()->getName();
         if ($this->match($request->route()) && auth()->user()->canNot($permission)) {
+            // Never block super administrators from accessing the admin panel
+            if (auth()->user()->hasRole('admin')) {
+                return $next($request);
+            }
             if ($permission == 'dashboard') {
                 return redirect(route('users.profile'));
             }
