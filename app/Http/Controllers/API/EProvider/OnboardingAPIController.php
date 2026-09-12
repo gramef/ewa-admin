@@ -156,11 +156,13 @@ class OnboardingAPIController extends Controller
 
             $provider->update(['available' => true]);
 
+            $packageName = 'Free Trial (30 Days)';
             // If a subscription tier was selected during onboarding, save it
             if ($request->has('subscription_package_id')) {
                 $packageId = $request->input('subscription_package_id');
                 $package = \Modules\Subscription\Models\SubscriptionPackage::find($packageId);
                 if ($package) {
+                    $packageName = $package->name;
                     $duration = ($package->trial_duration_in_days > 0) ? $package->trial_duration_in_days : 30;
                     \Modules\Subscription\Models\EProviderSubscription::updateOrCreate(
                         ['e_provider_id' => $provider->id],
@@ -174,6 +176,53 @@ class OnboardingAPIController extends Controller
                         ]
                     );
                 }
+            }
+
+            // Notify admin via Email and Database Notification
+            try {
+                $providerName = is_array($provider->name) ? ($provider->name['en'] ?? reset($provider->name)) : ($provider->name ?? 'Vendor');
+                $providerType = $provider->eProviderType ? (is_array($provider->eProviderType->name) ? ($provider->eProviderType->name['en'] ?? reset($provider->eProviderType->name)) : $provider->eProviderType->name) : 'Stylist';
+                $addressStr = $provider->addresses()->first()?->address ?? 'N/A';
+
+                // 1. Send email to admin@ewaofficialapp.com
+                \Illuminate\Support\Facades\Mail::to('admin@ewaofficialapp.com')->send(new \App\Mail\NewProviderRequestAdmin(
+                    $providerName,
+                    $providerType,
+                    $user->name ?? $providerName,
+                    $user->email ?? 'N/A',
+                    $provider->phone_number ?? ($user->phone_number ?? 'N/A'),
+                    $packageName,
+                    $addressStr,
+                    $provider->id
+                ));
+
+                // 2. Also send to any other registered admins
+                $admins = \App\Models\User::role('admin')->get();
+                foreach ($admins as $admin) {
+                    if ($admin->email && $admin->email !== 'admin@ewaofficialapp.com') {
+                        \Illuminate\Support\Facades\Mail::to($admin->email)->send(new \App\Mail\NewProviderRequestAdmin(
+                            $providerName,
+                            $providerType,
+                            $user->name ?? $providerName,
+                            $user->email ?? 'N/A',
+                            $provider->phone_number ?? ($user->phone_number ?? 'N/A'),
+                            $packageName,
+                            $addressStr,
+                            $provider->id
+                        ));
+                    }
+                }
+
+                // 3. Dispatch in-app database notification for admin bell
+                \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewProviderRequestNotification(
+                    $provider,
+                    $user,
+                    $packageName
+                ));
+
+                \Illuminate\Support\Facades\Log::info("New provider request notification and email dispatched for provider #{$provider->id} ({$providerName})");
+            } catch (\Exception $notifyErr) {
+                \Illuminate\Support\Facades\Log::error("Failed to dispatch provider request notification: " . $notifyErr->getMessage());
             }
 
             return $this->sendResponse($provider->toArray(), 'Onboarding complete!');

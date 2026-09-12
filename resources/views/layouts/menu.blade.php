@@ -82,11 +82,17 @@
 
 
 @can('eProviders.index')
+    @php
+        $pendingRequestedProvidersCount = \App\Models\EProvider::where('accepted', 0)->count();
+    @endphp
     <li class="nav-item has-treeview {{ (Request::is('eProvider*') || Request::is('requestedEProviders*') || Request::is('galleries*') || Request::is('experiences*') || Request::is('awards*') || Request::is('addresses*') || Request::is('availabilityHours*') ) && !Request::is('eProviderPayouts*') ? 'menu-open' : '' }}">
         <a href="#" class="nav-link {{ (Request::is('eProvider*') || Request::is('requestedEProviders*') || Request::is('galleries*') || Request::is('experiences*') || Request::is('awards*') || Request::is('addresses*') || Request::is('availabilityHours*')) && !Request::is('eProviderPayouts*') ? 'active' : '' }}"> @if($icons)
                 <i class="nav-icon fas fa-users-cog"></i>
             @endif
             <p>{{trans('lang.e_provider_plural')}} <i class="right fas fa-angle-left"></i>
+                @if($pendingRequestedProvidersCount > 0)
+                    <span class="right badge badge-warning mr-2">{{ $pendingRequestedProvidersCount }}</span>
+                @endif
             </p>
         </a>
         <ul class="nav nav-treeview">
@@ -106,7 +112,13 @@
                 <li class="nav-item">
                     <a class="nav-link {{ Request::is('requestedEProviders*') ? 'active' : '' }}" href="{!! route('requestedEProviders.index') !!}">@if($icons)
                             <i class="nav-icon fas fa-list-alt"></i>
-                        @endif<p>{{trans('lang.requested_e_providers_plural')}}</p></a>
+                        @endif
+                        <p>{{trans('lang.requested_e_providers_plural')}}
+                            @if($pendingRequestedProvidersCount > 0)
+                                <span class="right badge badge-warning">{{ $pendingRequestedProvidersCount }}</span>
+                            @endif
+                        </p>
+                    </a>
                 </li>
             @endcan
             @if(Module::has('EProviderDocuments') && Module::isEnabled('EProviderDocuments'))
